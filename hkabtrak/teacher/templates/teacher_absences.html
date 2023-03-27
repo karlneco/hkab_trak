@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+  <head>
+    <title>{{ class_obj.class_name }} Absences</title>
+  </head>
+  <body>
+    <h1>{{ class_obj.class_name }} Absences</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Reason</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for absence in class_obj.absences %}
+          <tr>
+            <td>{{ absence.student_name }}</td>
+            <td>{{ absence.reason }}</td>
+            <td>{{ absence.date }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <a href="{{ url_for('teacher_logout') }}">Logout</a>
+  </body>
+</html>

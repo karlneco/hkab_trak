@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Teacher Registration</title>
+  </head>
+  <body>
+    <h1>Teacher Registration</h1>
+    <form action="/teacher/teacher_register" method="post">
+      <label for="username">Username:</label>
+      <input type="text" id="username" name="username" required>
+      <br>
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required>
+      <br>
+      <label for="class_name">Class Name:</label>
+      <input type="text" id="class_name" name="class_name" required>
+      <br>
+      <input type="submit" value="Register">
+    </form>
+    <p>Already have an account? <a href="{{ url_for('teacher.teacher_login') }}">Login</a></p>
+  </body>
+</html>

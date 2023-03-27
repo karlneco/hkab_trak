@@ -3,9 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 
-
 ####################################################
-### Config
+# Config
 ####################################################
 db = SQLAlchemy()
 migrate = Migrate()
@@ -14,7 +13,7 @@ login_manager.login_view = 'root.index'
 
 
 ####################################################
-### App Factory
+# App Factory
 ####################################################
 def create_app(cf=None):
     print("config at: " + cf)
@@ -38,6 +37,10 @@ def initialize_extensions(app):
 # load blue  prints
 def register_blueprints(app):
     from hkabtrak.views import root_bp
+    from hkabtrak.absences.views import absences_bp
+    from hkabtrak.teacher.views import teachers_bp
 
     app.register_blueprint(root_bp, url_prefix='/')
+    app.register_blueprint(absences_bp, url_prefix='/absences')
+    app.register_blueprint(teachers_bp, url_prefix='/teacher')
     from hkabtrak import views
