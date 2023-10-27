@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from hkabtrak.models import Teacher, Class, load_user, User
+from hkabtrak.models import Class, load_user, User
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from hkabtrak import db
@@ -16,7 +16,7 @@ def teacher_register():
         name = request.form['name']
         class_name = request.form['class_name']
 
-        if Teacher.query.filter_by(email=username).first():
+        if User.query.filter_by(email=username).first():
             return 'Email already registered'
 
         class_obj = Class.query.filter_by(name=class_name).first()
@@ -34,13 +34,11 @@ def teacher_register():
         else:
             user_type = 'N'
 
-        user = User(email=username, password=password, user_type=user_type)
+        user = User(email=username, password=password, user_type=user_type, name=name)
+        user.classes.append(class_obj)
         db.session.add(user)
-
-        teacher = Teacher(email=username, name=name, password_hash=password, class_id=class_obj.id)
-        db.session.add(teacher)
         db.session.commit()
-        return redirect(url_for('teacher.teacher_login'))
+        return redirect(url_for('admin.teacher_list'))
 
     return render_template('teacher_register.html')
 

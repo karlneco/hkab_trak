@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from hkabtrak.models import Teacher, Class, load_user, User
+from hkabtrak.models import Class, load_user, User
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from hkabtrak import db
+from sqlalchemy.orm import joinedload
 
 admin_bp = Blueprint('admin', __name__, template_folder='templates')
 
@@ -15,5 +16,5 @@ def admin_main():
 
 @admin_bp.route('/teachers')
 def teacher_list():
-    teachers = Teacher.query.all()
+    teachers = User.query.all()
     return render_template('teachers.html', teachers=teachers)

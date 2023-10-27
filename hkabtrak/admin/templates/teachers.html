@@ -22,8 +22,8 @@
           <tr>
             <td>{{ teacher.name }}</td>
             <td>{{ teacher.email }}</td>
-            <td>{{ "Active" if teacher.user.is_active else "Inactive" }}</td>
-            <td>{{ teacher.user.user_type }}</td>
+            <td>{{ "Active" if teacher.is_active else "Inactive" }}</td>
+            <td>{{ teacher.user_type }}</td>
           </tr>
         {% endfor %}
       </tbody>
