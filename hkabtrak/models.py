@@ -33,11 +33,13 @@ class Absence(db.Model):
 class Teacher(db.Model):
     __tablename__ = 'teacher'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), index=True, unique=True)
+    email = db.Column(db.String(64), db.ForeignKey('user.email'))
     password_hash = db.Column(db.String(128))
+    name = db.Column(db.String(64))
     is_active = db.Column(db.Boolean, default=True)
     class_id = db.Column(db.Integer, db.ForeignKey('class.id'))
 
+    # user = db.relationship('User', foreign_keys=[email], back_populates='teacher')
     def __repr__(self):
         return f'<Teacher {self.username}>'
 
@@ -46,13 +48,15 @@ class User(db.Model, UserMixin):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), unique=True, index=True)
-    name = db.Column(db.String(64))
     password_hash = db.Column(db.String(128))
     is_active = db.Column(db.Boolean, default=True)
+    user_type = db.Column(db.String(1), default="N")
+    # teacher = db.relationship('Teacher', foreign_keys=[email], back_populates='user')
 
-    def __init__(self, email, password):
+    def __init__(self, email, password, user_type):
         self.email = email
         self.password_hash = generate_password_hash(password)
+        self.user_type = user_type
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)

@@ -11,34 +11,45 @@ teachers_bp = Blueprint('teacher', __name__, template_folder='templates')
 @teachers_bp.route('/teacher_register', methods=['GET', 'POST'])
 def teacher_register():
     if request.method == 'POST':
-        username = request.form['username']
+        username = request.form['email']
         password = request.form['password']
+        name = request.form['name']
         class_name = request.form['class_name']
 
-        if Teacher.query.filter_by(username=username).first():
-            return 'Username already exists'
-
-        hashed_password = generate_password_hash(password)
+        if Teacher.query.filter_by(email=username).first():
+            return 'Email already registered'
 
         class_obj = Class.query.filter_by(name=class_name).first()
 
         if not class_obj:
             class_obj = Class(name=class_name)
             db.session.add(class_obj)
-            db.session.commit()
+            # db.session.commit()
 
-        teacher = Teacher(username=username, password_hash=hashed_password, class_id=class_obj.id)
+        # Check if there are any users in the user table
+        existing_users = User.query.all()
+        if not existing_users:
+            # If no users exist, create the first user as an admin
+            user_type = 'A'
+        else:
+            user_type = 'N'
+
+        user = User(email=username, password=password, user_type=user_type)
+        db.session.add(user)
+
+        teacher = Teacher(email=username, name=name, password_hash=password, class_id=class_obj.id)
         db.session.add(teacher)
         db.session.commit()
         return redirect(url_for('teacher.teacher_login'))
 
     return render_template('teacher_register.html')
 
+
 @teachers_bp.route('/teacher_view', methods=['GET', 'POST'])
 @login_required
 def teacher_view():
     user = load_user(current_user.get_id())
-    teacher = Teacher.query.filter_by(username=user.id).first()
+    teacher = Teacher.query.filter_by(email=user.email).first()
     class_obj = Class.query.get(teacher.class_id)
     return render_template('teacher_absences.html', class_obj=class_obj)
 
@@ -47,21 +58,26 @@ def teacher_login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        teacher = Teacher.query.filter_by(username=username).first()
+        user = User.query.filter_by(email=username).first()
 
-        if teacher and check_password_hash(teacher.password_hash, password):
-            user = User(teacher.id)
+        if user and user.check_password(password):
             login_user(user)
+            flash('Login Successful')
+            if user.user_type == 'A':
+                return redirect(url_for('admin.admin_main'))
+
             return redirect(url_for('teacher.teacher_view'))
         else:
             return 'Invalid username or password'
 
     return render_template('teacher_login.html')
 
+
 @teachers_bp.route('/teacher_list')
 def teacher_list():
     teachers = Teacher.query.all()
     return render_template('teacher_list.html', teachers=teachers)
+
 
 @teachers_bp.route('/edit_teacher/<int:teacher_id>', methods=['GET', 'POST'])
 @login_required
@@ -83,6 +99,7 @@ def set_teacher_inactive(teacher_id):
     teacher.is_active = False
     db.session.commit()
     return redirect(url_for('teacher_list'))
+
 
 @teachers_bp.route('/teacher_logout')
 @login_required
