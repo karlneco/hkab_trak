@@ -7,6 +7,11 @@ from flask_login import UserMixin
 def load_user(user_id):
     return User.query.get(user_id)
 
+
+def load_course(class_id):
+    return Class.query.get(class_id)
+
+
 teacher_class = db.Table(
     "teacher_class",
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
@@ -27,9 +32,11 @@ class Class(db.Model):
 class Absence(db.Model):
     __tablename__ = 'absence'
     id = db.Column(db.Integer, primary_key=True)
+    parent_email = db.Column(db.String(128), index=True)
     student_name = db.Column(db.String(64), index=True)
     reason = db.Column(db.String(256))
-    date = db.Column(db.Date)
+    start_date = db.Column(db.Date)
+    start_time = db.Column(db.)
     class_id = db.Column(db.Integer, db.ForeignKey('class.id'))
 
     def __repr__(self):

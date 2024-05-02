@@ -39,10 +39,12 @@ def register_blueprints(app):
     from hkabtrak.views import root_bp
     from hkabtrak.absences.views import absences_bp
     from hkabtrak.teacher.views import teachers_bp
+    from hkabtrak.course.views import courses_bp
     from hkabtrak.admin.views import admin_bp
 
     app.register_blueprint(root_bp, url_prefix='/')
     app.register_blueprint(absences_bp, url_prefix='/absences')
     app.register_blueprint(teachers_bp, url_prefix='/teacher')
+    app.register_blueprint(courses_bp, url_prefix='/courses')
     app.register_blueprint(admin_bp, url_prefix='/admin')
     from hkabtrak import views

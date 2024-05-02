@@ -7,8 +7,8 @@ from hkabtrak import db
 teachers_bp = Blueprint('teacher', __name__, template_folder='templates')
 
 
-@teachers_bp.route('/teacher')
 @teachers_bp.route('/teacher_register', methods=['GET', 'POST'])
+@login_required
 def teacher_register():
     if request.method == 'POST':
         username = request.form['email']
@@ -47,9 +47,9 @@ def teacher_register():
 @login_required
 def teacher_view():
     user = load_user(current_user.get_id())
-    teacher = Teacher.query.filter_by(email=user.email).first()
-    class_obj = Class.query.get(teacher.class_id)
-    return render_template('teacher_absences.html', class_obj=class_obj)
+    classes = user.classes;
+    return render_template('teacher_absences.html', teacher=user, classes=classes)
+
 
 @teachers_bp.route('/teacher_login', methods=['GET', 'POST'])
 def teacher_login():
@@ -72,15 +72,17 @@ def teacher_login():
 
 
 @teachers_bp.route('/teacher_list')
+@login_required
+@login_required
 def teacher_list():
-    teachers = Teacher.query.all()
+    teachers = User.query.all()
     return render_template('teacher_list.html', teachers=teachers)
 
 
 @teachers_bp.route('/edit_teacher/<int:teacher_id>', methods=['GET', 'POST'])
 @login_required
 def edit_teacher(teacher_id):
-    teacher = Teacher.query.get_or_404(teacher_id)
+    teacher = User.query.get_or_404(teacher_id)
     if request.method == 'POST':
         teacher.username = request.form['username']
         teacher.class_teachers.class_name = request.form['class_name']

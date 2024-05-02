@@ -3,32 +3,27 @@
 {% block content %}
 <div class="container-sm">
 
-    <h1 class="mt-4">Teacher List</h1>
+    <h1 class="mt-4">Class List</h1>
 
     <table class="table mt-4">
       <thead>
         <tr>
           <th>Name</th>
-          <th>Email</th>
-          <th>Status</th>
-          <th>User Type</th>
         </tr>
       </thead>
       <tbody>
-        {% for teacher in teachers %}
-          <tr data-teacher-id="{{ teacher.id }}" class="teacher-row">
-            <td>{{ teacher.name }}</td>
-            <td>{{ teacher.email }}</td>
-            <td>{{ "Active" if teacher.is_active else "Inactive" }}</td>
-            <td>{{ teacher.user_type }}</td>
+        {% for course in courses %}
+          <tr data-course-id="{{ course.id }}" class="course-row">
+            <td>{{ course.name }}</td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
 
     <div class="mt-3">
-        <a class="btn btn-primary" href="{{ url_for('teacher.teacher_register') }}">Add Teacher</a>
+        <a class="btn btn-primary" href="{{ url_for('course.course_create') }}">Add a New Class</a>
     </div>
+
 </div>
     <!-- Add Bootstrap JS and jQuery scripts here -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
@@ -43,18 +38,18 @@
 
     <script>
   $(document).ready(function () {
-    $(".teacher-row").on("click", function () {
-      const teacherId = $(this).data('teacher-id');
-      if (teacherId) {
-        window.location.href = "{{ url_for('admin.teacher_edit', teacher_id=0) }}" + teacherId
+    $(".course-row").on("click", function () {
+      const classId = $(this).data('course-id');
+      if (classId) {
+        window.location.href = "{{ url_for('admin.course_edit', course_id=0) }}" + classId
       }
     });
 
-    $(".teacher-row").on("mouseover", function () {
+    $(".course-row").on("mouseover", function () {
       $(this).addClass("highlight");
     });
 
-    $(".teacher-row").on("mouseout", function () {
+    $(".course-row").on("mouseout", function () {
       $(this).removeClass("highlight");
     });
   });

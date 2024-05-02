@@ -1,0 +1,215 @@
+{% extends "chrome.html" %}
+
+{% block content %}
+    <style>
+      /* Style for list containers */
+      .class-list {
+          border: 1px solid #ccc;
+          padding: 10px;
+          margin-bottom: 20px;
+          border-radius: 10px;
+      }
+
+
+      /* Style for list items */
+      ul {
+        list-style: none;
+        padding: 0;
+      }
+      .class-item {
+          margin: 10px;
+      }
+
+      /* Style for buttons within list items */
+      li button {
+        margin-left: 10px;
+      }
+
+      /* Create a grid layout for side-by-side frames */
+      .frame-container {
+        display: flex;
+      }
+
+      /* Style for individual frames */
+      .frame {
+        flex: 1; /* Equal width for both frames */
+        padding: 10px;
+      }
+      hr {
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 4px solid #555;
+        width: 80%;
+        }
+    </style>
+<div class="container-sm">
+
+
+    <h1 class="mt-5">Edit Teacher</h1>
+
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" id="teacher-detail-tab" data-toggle="tab" href="#teacher-detail" role="tab" aria-controls="teacher-detail" aria-selected="true">Teacher Detail</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="classes-tab" data-toggle="tab" href="#classes" role="tab" aria-controls="classes" aria-selected="false">Classes</a>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="myTabContent">
+      <div class="tab-pane fade show active" id="teacher-detail" role="tabpanel" aria-labelledby="teacher-detail-tab">
+     <form method="post" action="{{ url_for('admin.teacher_edit', teacher_id=teacher.id) }}">
+      <div class="form-group">
+        <label for="name">Name</label>
+        <input type="text" class="form-control" id="name" name="name" value="{{ teacher.name }}">
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" class="form-control" id="email" name="email" value="{{ teacher.email }}">
+      </div>
+      <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="is_active" name="is_active" {% if teacher.is_active %}checked{% endif %}>
+        <label class="form-check-label" for="is_active">Active</label>
+      </div>
+      <div class="form-group">
+        <label for="user_type">User Type</label>
+        <select class="form-control" id="user_type" name="user_type">
+          <option value="T" {% if teacher.user_type == 'T' %}selected{% endif %}>Teacher</option>
+          <option value="A" {% if teacher.user_type == 'A' %}selected{% endif %}>Administrator</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+        <hr/>
+    <!-- Password Reset Form -->
+    <form method="post" action="{{ url_for('admin.reset_password', teacher_id=teacher.id) }}">
+      <div class="mt-4">
+        <h3>Password Reset</h3>
+        <div class="form-group">
+          <label for="new_password">New Password</label>
+          <input type="password" class="form-control" id="new_password" name="new_password">
+        </div>
+        <button type="submit" class="btn btn-warning">Reset Password</button>
+      </div>
+    </form>
+
+      </div>
+      <div class="tab-pane fade, " id="classes" role="tabpanel" aria-labelledby="classes-tab">
+          <div class="frame-container">
+            <div class="frame">
+            <!-- List of Classes for the Teacher -->
+            <h4>Classes for {{ teacher.name }}</h4>
+            <ul id="teacher-classes-list" class="class-list">
+              {% for class in teacher.classes %}
+                <li>{{ class.name }} <button class="btn btn-danger btn-sm" onclick="removeFromClass({{ class.id }})">Remove</button></li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <div class="frame">
+            <!-- List of All Classes -->
+            <h4>All Classes</h4>
+            <ul id="all-classes-list" class="class-list">
+              {% for class in all_classes %}
+                <li>{{ class.name }} <button class="btn btn-success btn-sm" onclick="addToClass({{ class.id }})">Add</button></li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+  <script>
+  // Function to populate the "Classes for Teacher" list
+  function populateTeacherClasses() {
+    $.ajax({
+      url: '/admin/api/teacher_classes/{{ teacher.id }}', // Replace with the correct URL for fetching teacher's classes
+      method: 'GET',
+      success: function (data) {
+        const teacherClassesList = $('#teacher-classes-list');
+        teacherClassesList.empty(); // Clear the list
+
+        data.classes.forEach(function (aclass) {
+          const listItem = $('<li></li>');
+          listItem.text(aclass.name);
+          const removeButton = $('<button aclass="btn btn-danger btn-sm">Remove</button>');
+          removeButton.on('click', function () {
+            removeFromClass(aclass.id);
+          });
+          listItem.append(removeButton);
+          teacherClassesList.append(listItem);
+        });
+      },
+      error: function (error) {
+        console.log('Error fetching teacher classes:', error);
+      },
+    });
+  }
+
+  // Function to populate the "All Classes" list
+  function populateAllClasses() {
+    $.ajax({
+      url: '/admin/api/all_classes', // Replace with the correct URL for fetching all classes
+      method: 'GET',
+      success: function (data) {
+        const allClassesList = $('#all-classes-list');
+        allClassesList.empty(); // Clear the list
+
+        data.classes.forEach(function (aclass) {
+          const listItem = $('<li></li>');
+          listItem.text(aclass.name);
+          const addButton = $('<button aclass="btn btn-success btn-sm">Add</button>');
+          addButton.on('click', function () {
+            addToClass(aclass.id);
+          });
+          listItem.append(addButton);
+          allClassesList.append(listItem);
+        });
+      },
+      error: function (error) {
+        console.log('Error fetching all classes:', error);
+      },
+    });
+  }
+
+  // Initial population of the lists when the page loads
+  populateTeacherClasses();
+  populateAllClasses();
+</script>
+<script>
+  // Function to add a aclass to the teacher
+  function addToClass(classId) {
+    $.ajax({
+      url: `/admin/api/add_class/${classId}/{{ teacher.id }}`, // Replace with the correct URL for adding a aclass
+      method: 'POST',
+      success: function (data) {
+        // Refresh the lists after successfully adding the aclass
+        populateTeacherClasses();
+        populateAllClasses();
+      },
+      error: function (error) {
+        console.log('Error adding aclass:', error);
+      },
+    });
+  }
+
+  // Function to remove a aclass from the teacher
+  function removeFromClass(classId) {
+    $.ajax({
+      url: `/admin/api/remove_class/${classId}/{{ teacher.id }}`, // Replace with the correct URL for removing a aclass
+      method: 'POST',
+      success: function (data) {
+        // Refresh the lists after successfully removing the aclass
+        populateTeacherClasses();
+        populateAllClasses();
+      },
+      error: function (error) {
+        console.log('Error removing aclass:', error);
+      },
+    });
+  }
+</script>
+</div>
+{% endblock %}

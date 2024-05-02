@@ -1,0 +1,80 @@
+{% extends "chrome.html" %}
+
+{% block content %}
+    <style>
+      /* Style for list containers */
+      .class-list {
+          border: 1px solid #ccc;
+          padding: 10px;
+          margin-bottom: 20px;
+          border-radius: 10px;
+      }
+
+
+      /* Style for list items */
+      ul {
+        list-style: none;
+        padding: 0;
+      }
+      .class-item {
+          margin: 10px;
+      }
+
+      /* Style for buttons within list items */
+      li button {
+        margin-left: 10px;
+      }
+
+      /* Create a grid layout for side-by-side frames */
+      .frame-container {
+        display: flex;
+      }
+
+      /* Style for individual frames */
+      .frame {
+        flex: 1; /* Equal width for both frames */
+        padding: 10px;
+      }
+      hr {
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 4px solid #555;
+        width: 80%;
+        }
+    </style>
+<div class="container-sm">
+
+
+    <h1 class="mt-5">Edit Class</h1>
+
+    <ul class="nav nav-tabs" id="class-tab" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" id="teacher-detail-tab" data-toggle="tab" href="#class-detail" role="tab" aria-controls="class-detail" aria-selected="true">Class Detail</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="student-tab" data-toggle="tab" href="#students" role="tab" aria-controls="students" aria-selected="false">Students</a>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="classContent">
+      <div class="tab-pane fade show active" id="class-detail" role="tabpanel" aria-labelledby="class-detail-tab">
+     <form method="post" action="{{ url_for('admin.course_edit', course_id=course.id) }}">
+      <div class="form-group">
+        <label for="name">Name</label>
+        <input type="text" class="form-control" id="name" name="name" value="{{ course.name }}">
+      </div>
+      <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+
+      </div>
+      <div class="tab-pane fade, " id="students" role="tabpanel" aria-labelledby="students-tab">
+          <div class="frame-container">
+            <div class="frame">
+            </div>
+          </div>
+      </div>
+    </div>
+</div>
+
+{% endblock %}
