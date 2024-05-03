@@ -1,5 +1,7 @@
+from datetime import date, timedelta
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from hkabtrak.models import Class, load_user, User
+from hkabtrak.models import Class, load_user, User, Absence
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from hkabtrak import db
@@ -38,8 +40,19 @@ def staff_register():
 @login_required
 def staff_view():
     user = load_user(current_user.get_id())
-    classes = user.classes;
-    return render_template('staff_absences.html', staff=user, classes=classes)
+    if not user:
+        return redirect(url_for('login'))
+
+    classes = user.classes
+    all_absences = []
+    for class_obj in classes:
+        absences = Absence.query.filter_by(class_id=class_obj.id).all()
+        all_absences.extend(absences)
+
+    all_absences_sorted = sorted(all_absences, key=lambda x: x.date, reverse=True)
+    this_saturday = date.today() + timedelta((5 - date.today().weekday()) % 7)
+
+    return render_template('staff_absences.html', absences=all_absences_sorted, classes=classes, this_saturday=this_saturday)
 
 
 @staff_bp.route('/staff_login', methods=['GET', 'POST'])

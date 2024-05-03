@@ -23,6 +23,7 @@ class Class(db.Model):
     name = db.Column(db.String(64), index=True, unique=True)
     instructions = db.Column(db.String(512), nullable=True)
     staff = db.relationship('User', secondary=staff_class, back_populates='classes')
+    absences = db.relationship('Absence', back_populates='course')
 
     def __repr__(self):
         return f'<Class {self.name}>'
@@ -39,6 +40,7 @@ class Absence(db.Model):
     end_time = db.Column(db.Time, nullable=True)
     comment = db.Column(db.String(512), nullable=True)
     class_id = db.Column(db.Integer, db.ForeignKey('class.id'))
+    course = db.relationship('Class', back_populates='absences')
 
     def __repr__(self):
         return f'<Absence {self.student_name} {self.date}>'

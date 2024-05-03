@@ -1,14 +1,24 @@
 <!doctype html>
 <html>
 <head>
-    <title>Absences</title>
+    <title>Absences Overview</title>
     <!-- Include Bootstrap CSS from CDN for styling -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 </head>
 <body>
     <div class="container mt-3">
-        <h1>Absences</h1>
-        <table class="table table-striped">
+        <h1>Absences Overview</h1>
+        <!-- Class Buttons for Filtering -->
+        <div class="btn-group mb-3" role="group" aria-label="Class Filters">
+            <button type="button" class="btn btn-secondary" onclick="filterAbsences('all')">All Classes</button>
+            {% for class in classes %}
+            <button type="button" class="btn btn-secondary" onclick="filterAbsences('{{ class.id }}')">{{ class.name }}</button>
+            {% endfor %}
+            <button type="button" class="btn btn-info" onclick="toggleFutureAbsences()">Toggle Past and Future Absences</button>
+        </div>
+
+        <!-- Absences Table -->
+        <table class="table">
             <thead class="thead-dark">
                 <tr>
                     <th>Name</th>
@@ -18,24 +28,56 @@
                     <th>End Time</th>
                     <th>Parent Email</th>
                     <th>Comment</th>
+                    <th>Class</th>
                 </tr>
             </thead>
             <tbody>
-                {% for absence in classes.absences %}
-                <tr>
+                {% set previous_date = None %}
+                {% for absence in absences %}
+                {% if previous_date and previous_date > this_saturday and absence.date <= this_saturday %}
+                <tr><td colspan="8" class="bg-dark"></td></tr> <!-- Draw line for week boundary -->
+                {% endif %}
+
+                <tr {% if absence.date > this_saturday %}style="color: lightgrey;"{% elif absence.date < this_saturday %} style="color: gray"{% endif %} class="absence-entry" data-class-id="{{ absence.class_id }}" data-future="{% if absence.date != this_saturday %}true{% else %}false{% endif %}">
                     <td>{{ absence.student_name }}</td>
                     <td>{{ absence.reason }}</td>
                     <td>{{ absence.date.strftime('%Y-%m-%d') }}</td>
                     <td>{{ absence.start_time.strftime('%H:%M') if absence.start_time else 'N/A' }}</td>
                     <td>{{ absence.end_time.strftime('%H:%M') if absence.end_time else 'N/A' }}</td>
                     <td>{{ absence.parent_email }}</td>
-                    <td style="white-space: pre-wrap;">{{ absence.comment }}</td>
+                    <td style="white-space: pre-wrap;"> {{ absence.comment }}</td>
+                    <td>{{ absence.course.name }}</td>
                 </tr>
+                {% set previous_date = absence.date %}
                 {% endfor %}
             </tbody>
         </table>
         <a href="{{ url_for('staff.staff_logout') }}" class="btn btn-danger">Logout</a>
     </div>
+
+    <script>
+        function filterAbsences(classId) {
+            const rows = document.querySelectorAll('.absence-entry');
+            rows.forEach(row => {
+                if (classId === 'all' || row.dataset.classId === classId) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function toggleFutureAbsences() {
+            const rows = document.querySelectorAll('.absence-entry');
+            const showingFuture = rows[0].style.display === '' && rows[0].dataset.future === 'true';
+            rows.forEach(row => {
+                if (row.dataset.future === 'true') {
+                    row.style.display = showingFuture ? 'none' : '';
+                }
+            });
+        }
+    </script>
+
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
