@@ -70,19 +70,6 @@ def staff_list():
     return render_template('staff_list.html', staff=staff)
 
 
-@staff_bp.route('/edit_staff/<int:staff_id>', methods=['GET', 'POST'])
-@login_required
-def edit_staff(staff_id):
-    staff = User.query.get_or_404(staff_id)
-    if request.method == 'POST':
-        staff.username = request.form['username']
-        staff.class_teachers.class_name = request.form['class_name']
-        db.session.commit()
-        return redirect(url_for('staff_list'))
-
-    return render_template('edit_staff.html', staff=staff)
-
-
 @staff_bp.route('/set_staff_inactive/<int:staff_id>')
 @login_required
 def set_staff_inactive(staff_id):

@@ -106,7 +106,7 @@ def reset_password(staff_id):
 # Route to get the classes for a specific teacher
 @admin_bp.route('/api/staff_classes/<int:staff_id>', methods=['GET'])
 @login_required
-def get_teacher_classes(staff_id):
+def get_staff_classes(staff_id):
     staff = User.query.get(staff_id)
     if staff:
         classes = [{'id': c.id, 'name': c.name} for c in staff.classes]
@@ -126,11 +126,11 @@ def get_all_classes():
 @admin_bp.route('/api/add_class/<int:class_id>/<int:staff_id>', methods=['POST'])
 @login_required
 def add_class(class_id, staff_id):
-    teacher = User.query.get(staff_id)
+    staff = User.query.get(staff_id)
     class_to_add = Class.query.get(class_id)
 
-    if teacher and class_to_add:
-        teacher.classes.append(class_to_add)
+    if staff and class_to_add:
+        staff.classes.append(class_to_add)
         db.session.commit()
         return jsonify({'message': 'Class added successfully'})
     else:
