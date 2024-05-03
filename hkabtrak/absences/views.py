@@ -16,14 +16,23 @@ def submit_absence():
         class_id = request.form['class_id']
         date_str = request.form['date']
 
-        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+        try:
+            date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            start_time = datetime.strptime(request.form['start_time'], '%H:%M').time()
+            end_time = datetime.strptime(request.form['end_time'], '%H:%M').time()
+        except ValueError:
+            flash('Invalid date or time format. Please try again.')
+            return redirect(url_for('submit_absence'))
 
-        absence = Absence(student_name=student_name, reason=reason, class_id=class_id, date=date_obj)
+        parent_name = request.form['parent_name']
+        comment = request.form['comment']
+
+        absence = Absence(student_name=student_name, reason=reason, class_id=class_id, date=date, start_time=start_time, end_time=end_time, parent_name=parent_name, comment=comment)
         db.session.add(absence)
         db.session.commit()
 
         flash('Absence submitted successfully', 'success')
-        return redirect(url_for('absences.submit_absence'))
+        return redirect(url_for('submit_absence'))
 
     classes = Class.query.all()
     today = datetime.today().strftime('%Y-%m-%d')

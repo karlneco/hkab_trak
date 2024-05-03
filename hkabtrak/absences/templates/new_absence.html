@@ -2,24 +2,42 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit, maximum-scale=1">
     <title>Submit an Absence</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+
+    <style>
+      #instructions-box {
+        background-color: #ffdeb9;
+        border: 2px solid orange;
+        color: black;
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 10px;
+        display: none;
+      }
+
+      #comment {
+        border: 2px solid red;
+      }
+    </style>
   </head>
   <body>
     <div class="container">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <div class="row mt-3">
-      <div class="col-md-12">
-        {% for category, message in messages %}
-          <div class="alert alert-{{ category }}">{{ message }}</div>
-        {% endfor %}
-      </div>
-    </div>
-  {% endif %}
-{% endwith %}
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="row mt-3">
+            <div class="col-md-12">
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+      {% endwith %}
+
       <h1 class="text-center mt-5">Submit an Absence</h1>
       <div class="row justify-content-center mt-5">
         <div class="col-md-6">
@@ -28,27 +46,120 @@
               <label for="student_name" class="form-label">Student Name:</label>
               <input type="text" class="form-control" id="student_name" name="student_name" required>
             </div>
+
             <div class="mb-3">
               <label for="reason" class="form-label">Reason:</label>
-          <input type="text" class="form-control" id="reason" name="reason" required>
+              <select class="form-select" id="reason" name="reason" required onchange="handleReasonChange()">
+                <option value="">Select a Reason</option>
+                <option value="Absent">Absent</option>
+                <option value="Late">Late</option>
+                <option value="Leaving Early">Leaving Early</option>
+                <option value="Absent for a Time">Absent for a Time</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="class_id" class="form-label">Class:</label>
+              <select class="form-select" id="class_id" name="class_id" required onchange="displayInstructions()">
+                <option value="">Select a Class</option>
+                {% for cls in classes %}
+                  <option value="{{ cls.id }}" data-instructions="{{ cls.instructions }}">{{ cls.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div id="instructions-box"></div>
+
+            <div class="mb-3">
+              <label for="date" class="form-label">Date:</label>
+              <input type="date" class="form-control" id="date" name="date" value="{{ today }}" required>
+            </div>
+
+            <div id="start-time-section" style="display: none">
+              <div class="mb-3">
+                <label for="start_time" class="form-label">Start Time:</label>
+                <input type="time" class="form-control" id="start_time" name="start_time">
+              </div>
+            </div>
+            <div id="end-time-section" style="display: none">
+              <div class="mb-3">
+                <label for="end_time" class="form-label">End Time:</label>
+                <input type="time" class="form-control" id="end_time" name="end_time">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="parent_name" class="form-label">Parent's Name:</label>
+              <input type="text" class="form-control" id="parent_name" name="parent_name" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="comment" class="form-label">Comment:</label>
+              <textarea class="form-control" id="comment" name="comment" rows="4" required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit Absence</button>
+          </form>
         </div>
-        <div class="mb-3">
-          <label for="class_id" class="form-label">Class:</label>
-          <select class="form-select" id="class_id" name="class_id" required>
-            <option value="">Select a Class</option>
-            {% for cls in classes %}
-              <option value="{{ cls.id }}">{{ cls.name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="mb-3">
-          <label for="date" class="form-label">Date:</label>
-          <input type="date" class="form-control" id="date" name="date" value="{{ today }}" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Submit Absence</button>
-      </form>
+      </div>
     </div>
-  </div>
-</div>
-</body>
+
+    <!-- Optional JavaScript: jQuery, Popper.js, Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.12.7/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.min.js"></script>
+
+    <script>
+      function displayInstructions() {
+        const classSelect = document.getElementById("class_id");
+        const instructionsBox = document.getElementById("instructions-box");
+
+        const selectedOption = classSelect.options[classSelect.selectedIndex];
+        const instructions = selectedOption.getAttribute("data-instructions");
+
+        if (instructions && instructions.toLowerCase() != "none") {
+          instructionsBox.innerHTML = `<strong>Teacher's Instructions:</strong> <br/>${instructions}`;
+          instructionsBox.style.display = "block";
+        } else {
+          instructionsBox.style.display = "none";
+        }
+      }
+
+      function handleReasonChange() {
+        const reasonSelect = document.getElementById("reason");
+        const reason = reasonSelect.value;
+
+        const startTimeSection = document.getElementById("start-time-section");
+        const startTimeLabel = document.getElementById("start_time").previousElementSibling;
+        const endTimeSection = document.getElementById("end-time-section");
+        const endTimeLabel = document.getElementById("end_time").previousElementSibling;
+
+        switch (reason) {
+          case "Absent":
+            startTimeSection.style.display = "none";
+            endTimeSection.style.display = "none"
+            break;
+          case "Late":
+            startTimeSection.style.display = "block";
+            startTimeLabel.innerHTML = "Expected Time:";
+            endTimeSection.style.display = "none";
+            break;
+          case "Leaving Early":
+            startTimeSection.style.display = "none";
+            endTimeSection.style.display = "block";
+            endTimeLabel.innerHTML = "Leaving At:";
+            break;
+          case "Absent for a Time":
+            startTimeSection.style.display = "block";
+            endTimeSection.style.display = "block";
+            startTimeLabel.innerHTML = "Leaving Time:";
+            endTimeLabel.innerHTML = "Return Time:";
+            break;
+          default:
+            startTimeSection.style.display = "none";
+            endTimeSection.style.display = "none"
+        }
+      }
+    </script>
+  </body>
 </html>

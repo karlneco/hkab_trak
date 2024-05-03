@@ -70,6 +70,8 @@ def course_edit(course_id):
     if request.method == 'POST':
         # Update teacher data based on form input
         course.name = request.form['name']
+        course.instructions = request.form['instructions']  # Capture the instructions from the form
+
 
         # Commit changes to the database
         db.session.commit()

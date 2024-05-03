@@ -12,6 +12,7 @@ courses_bp = Blueprint('course', __name__, template_folder='templates')
 def course_create():
     if request.method == 'POST':
         name = request.form['name']
+        instructions = request.form['instructions']  # Capture the instructions from the form
 
         class_obj = Class(name=name)
         db.session.add(class_obj)

@@ -23,6 +23,7 @@ class Class(db.Model):
     __tablename__ = 'class'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True, unique=True)
+    instructions = db.Column(db.String(512), nullable=True)
     teachers = db.relationship('User', secondary=teacher_class, back_populates='classes')
 
     def __repr__(self):
@@ -32,11 +33,13 @@ class Class(db.Model):
 class Absence(db.Model):
     __tablename__ = 'absence'
     id = db.Column(db.Integer, primary_key=True)
-    parent_email = db.Column(db.String(128), index=True)
+    parent_email = db.Column(db.String(128))
     student_name = db.Column(db.String(64), index=True)
     reason = db.Column(db.String(256))
-    start_date = db.Column(db.Date)
-    start_time = db.Column(db.)
+    date = db.Column(db.Date)
+    start_time = db.Column(db.Time, nullable=True)
+    end_time = db.Column(db.Time, nullable=True)
+    comment = db.Column(db.String(512), nullable=True)
     class_id = db.Column(db.Integer, db.ForeignKey('class.id'))
 
     def __repr__(self):
