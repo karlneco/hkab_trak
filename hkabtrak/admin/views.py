@@ -20,38 +20,38 @@ def logout():
     return render_template('index.html')
 
 
-@admin_bp.route('/teachers')
+@admin_bp.route('/staff')
 @login_required
-def teacher_list():
-    teachers = User.query.all()
-    return render_template('teachers.html', teachers=teachers)
+def staff_list():
+    staff = User.query.all()
+    return render_template('staff_list.html', staff=staff)
 
 
-@admin_bp.route('/teachers/edit/<int:teacher_id>', methods=['GET', 'POST'])
+@admin_bp.route('/staff/edit/<int:staff_id>', methods=['GET', 'POST'])
 @login_required
-def teacher_edit(teacher_id):
-    # Load the teacher data from the database based on teacher_id
-    teacher = User.query.get(teacher_id)
+def staff_edit(staff_id):
+    # Load the teacher data from the database based on user_id
+    staff = User.query.get(staff_id)
 
-    teacher_classes = [{'id': c.id, 'name': c.name} for c in teacher.classes]
+    staff_classes = [{'id': c.id, 'name': c.name} for c in staff.classes]
 
     classes = Class.query.all()
     all_classes = [{'id': c.id, 'name': c.name} for c in classes]
 
     if request.method == 'POST':
         # Update teacher data based on form input
-        teacher.name = request.form['name']
-        teacher.email = request.form['email']
-        teacher.is_active = 'is_active' in request.form
-        teacher.user_type = request.form['user_type']
+        staff.name = request.form['name']
+        staff.email = request.form['email']
+        staff.is_active = 'is_active' in request.form
+        staff.user_type = request.form['user_type']
 
         # Commit changes to the database
         db.session.commit()
 
         # Redirect to the teacher list or another page
-        return redirect(url_for('admin.teacher_list'))
+        return redirect(url_for('admin.staff_list'))
 
-    return render_template('teacher_edit.html', teacher=teacher, classes=teacher_classes, all_classes=all_classes)
+    return render_template('staff_edit.html', staff=staff, classes=staff_classes, all_classes=all_classes)
 
 
 @admin_bp.route('/courses')
@@ -64,36 +64,33 @@ def course_list():
 @admin_bp.route('/courses/edit/<int:course_id>', methods=['GET', 'POST'])
 @login_required
 def course_edit(course_id):
-    # Load the teacher data from the database based on teacher_id
-    course = Class.query.get(course_id)
+    course = Class.query.get_or_404(course_id)
+    # Filter staff into teachers and assistants
+    teachers = [user for user in course.staff if user.user_type == 'T']
+    assistants = [user for user in course.staff if user.user_type == 'H']
 
     if request.method == 'POST':
-        # Update teacher data based on form input
+        # Since no editing of teachers or assistants, only handle other fields
         course.name = request.form['name']
-        course.instructions = request.form['instructions']  # Capture the instructions from the form
-
-
-        # Commit changes to the database
+        course.instructions = request.form['instructions']
         db.session.commit()
-
-        # Redirect to the teacher list or another page
         return redirect(url_for('admin.course_list'))
 
-    return render_template('course_edit.html', course=course)
+    return render_template('course_edit.html', course=course, teachers=teachers, assistants=assistants)
 
 
-@admin_bp.route('/admin/reset_password/<int:teacher_id>', methods=['POST'])
+@admin_bp.route('/admin/reset_password/<int:staff_id>', methods=['POST'])
 @login_required
-def reset_password(teacher_id):
+def reset_password(staff_id):
     if request.method == 'POST':
         new_password = request.form['new_password']
 
         # Retrieve the teacher from the database
-        teacher = User.query.get(teacher_id)
+        staff = User.query.get(staff_id)
 
-        if teacher is not None:
+        if staff is not None:
             # Set the new password for the teacher
-            teacher.password_hash = generate_password_hash(
+            staff.password_hash = generate_password_hash(
                 new_password)  # Ensure you have the correct password hashing function
 
             # Commit changes to the database
@@ -101,18 +98,18 @@ def reset_password(teacher_id):
 
             flash('Password reset successful', 'success')
         else:
-            flash('Teacher not found', 'error')
+            flash('Staff member not found', 'error')
 
-        return redirect(url_for('admin.teacher_edit', teacher_id=teacher_id))
+        return redirect(url_for('admin.staff_edit', staff_id=staff_id))
 
 
 # Route to get the classes for a specific teacher
-@admin_bp.route('/api/teacher_classes/<int:teacher_id>', methods=['GET'])
+@admin_bp.route('/api/staff_classes/<int:staff_id>', methods=['GET'])
 @login_required
-def get_teacher_classes(teacher_id):
-    teacher = User.query.get(teacher_id)
-    if teacher:
-        classes = [{'id': c.id, 'name': c.name} for c in teacher.classes]
+def get_teacher_classes(staff_id):
+    staff = User.query.get(staff_id)
+    if staff:
+        classes = [{'id': c.id, 'name': c.name} for c in staff.classes]
         return jsonify({'classes': classes})
     else:
         return jsonify({'classes': []})
@@ -126,10 +123,10 @@ def get_all_classes():
     all_classes = [{'id': c.id, 'name': c.name} for c in classes]
     return jsonify({'classes': all_classes})
 
-@admin_bp.route('/api/add_class/<int:class_id>/<int:teacher_id>', methods=['POST'])
+@admin_bp.route('/api/add_class/<int:class_id>/<int:staff_id>', methods=['POST'])
 @login_required
-def add_class(class_id, teacher_id):
-    teacher = User.query.get(teacher_id)
+def add_class(class_id, staff_id):
+    teacher = User.query.get(staff_id)
     class_to_add = Class.query.get(class_id)
 
     if teacher and class_to_add:
@@ -140,14 +137,14 @@ def add_class(class_id, teacher_id):
         return jsonify({'error': 'Teacher or class not found'})
 
 # Route to remove a class from a teacher
-@admin_bp.route('/api/remove_class/<int:class_id>/<int:teacher_id>', methods=['POST'])
+@admin_bp.route('/api/remove_class/<int:class_id>/<int:staff_id>', methods=['POST'])
 @login_required
-def remove_class(class_id, teacher_id):
-    teacher = User.query.get(teacher_id)
+def remove_class(class_id, staff_id):
+    staff = User.query.get(staff_id)
     class_to_remove = Class.query.get(class_id)
 
-    if teacher and class_to_remove:
-        teacher.classes.remove(class_to_remove)
+    if staff and class_to_remove:
+        staff.classes.remove(class_to_remove)
         db.session.commit()
         return jsonify({'message': 'Class removed successfully'})
     else:

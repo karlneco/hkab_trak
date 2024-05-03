@@ -1,90 +1,72 @@
 {% extends "chrome.html" %}
 
 {% block content %}
-    <style>
-        /* Style for list containers */
-        .class-list {
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-        }
-
-
-        /* Style for list items */
-        ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .class-item {
-            margin: 10px;
-        }
-
-        /* Style for buttons within list items */
-        li button {
-            margin-left: 10px;
-        }
-
-        /* Create a grid layout for side-by-side frames */
-        .frame-container {
-            display: flex;
-        }
-
-        /* Style for individual frames */
-        .frame {
-            flex: 1; /* Equal width for both frames */
-            padding: 10px;
-        }
-
-        hr {
-            margin-top: 2rem;
-            margin-bottom: 1rem;
-            border: 0;
-            border-top: 4px solid #555;
-            width: 80%;
-        }
-    </style>
-    <div class="container-sm">
-
-
-        <h1 class="mt-5">Edit Class</h1>
-
-        <ul class="nav nav-tabs" id="class-tab" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active" id="teacher-detail-tab" data-toggle="tab" href="#class-detail" role="tab"
-                   aria-controls="class-detail" aria-selected="true">Class Detail</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="student-tab" data-toggle="tab" href="#students" role="tab"
-                   aria-controls="students" aria-selected="false">Students</a>
-            </li>
-        </ul>
-
-        <div class="tab-content" id="classContent">
-            <div class="tab-pane fade show active" id="class-detail" role="tabpanel" aria-labelledby="class-detail-tab">
-                <form method="post" action="{{ url_for('admin.course_edit', course_id=course.id) }}">
-                    <div class="form-group">
-                        <label for="name">Name</label>
-                        <input type="text" class="form-control" id="name" name="name" value="{{ course.name }}">
-                    </div>
-                    <div class="mb-3">
-                        <label for="instructions" class="form-label">Teacher Instructions:</label>
-                        <textarea class="form-control" id="instructions" name="instructions"
-                                  rows="4">{{ course.instructions if course else "" }}</textarea>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </form>
-
+<style>
+    .list-group-item:hover {
+        cursor: pointer; /* Change cursor to indicate interactivity */
+    }
+    .highlight {
+        background-color: #f8f9fa; /* Light gray background on hover */
+    }
+</style>
+<div class="container mt-5">
+    <h1>Edit Class</h1>
+    <form method="post" action="{{ url_for('admin.course_edit', course_id=course.id) }}">
+        <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="name" name="name" value="{{ course.name }}">
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <label class="form-label">Teacher(s):</label>
+                <ul class="list-group">
+                    {% for teacher in teachers %}
+                    <li class="list-group-item staff-row" data-staff-id="{{ teacher.id }}">
+                        {{ teacher.name }}
+                    </li>
+                    {% else %}
+                    <li class="list-group-item">None assigned</li>
+                    {% endfor %}
+                </ul>
             </div>
-            <div class="tab-pane fade, " id="students" role="tabpanel" aria-labelledby="students-tab">
-                <div class="frame-container">
-                    <div class="frame">
-                    </div>
-                </div>
+            <div class="col-md-6">
+                <label class="form-label">Assistant(s):</label>
+                <ul class="list-group">
+                    {% for assistant in assistants %}
+                    <li class="list-group-item staff-row" data-staff-id="{{ assistant.id }}">
+                        {{ assistant.name }}
+                    </li>
+                    {% else %}
+                    <li class="list-group-item">None assigned</li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
-    </div>
+        <div class="mb-3">
+            <label for="instructions" class="form-label">Teacher Instructions:</label>
+            <textarea class="form-control" id="instructions" name="instructions" rows="4">{{ course.instructions }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
+
+<script>
+  $(document).ready(function () {
+    $(".staff-row").on("click", function () {
+      const staffId = $(this).data('staff-id');
+      if (staffId) {
+        window.location.href = "{{ url_for('admin.staff_edit', staff_id=0) }}" + staffId;
+      }
+    });
+
+    $(".staff-row").on("mouseover", function () {
+      $(this).addClass("highlight");
+    });
+
+    $(".staff-row").on("mouseout", function () {
+      $(this).removeClass("highlight");
+    });
+  });
+</script>
 
 {% endblock %}

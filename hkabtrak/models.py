@@ -7,24 +7,22 @@ from flask_login import UserMixin
 def load_user(user_id):
     return User.query.get(user_id)
 
-
 def load_course(class_id):
     return Class.query.get(class_id)
 
 
-teacher_class = db.Table(
-    "teacher_class",
+staff_class = db.Table(
+    "staff_class",
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('class_id', db.Integer, db.ForeignKey('class.id')),
 )
-
 
 class Class(db.Model):
     __tablename__ = 'class'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True, unique=True)
     instructions = db.Column(db.String(512), nullable=True)
-    teachers = db.relationship('User', secondary=teacher_class, back_populates='classes')
+    staff = db.relationship('User', secondary=staff_class, back_populates='classes')
 
     def __repr__(self):
         return f'<Class {self.name}>'
@@ -54,7 +52,7 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(128))
     is_active = db.Column(db.Boolean, default=True)
     user_type = db.Column(db.String(1), default="N")
-    classes = db.relationship('Class', secondary=teacher_class, back_populates='teachers')
+    classes = db.relationship('Class', secondary=staff_class, back_populates='staff')
 
     def __init__(self, email, password, name, user_type):
         self.email = email

@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container-sm">
 
-    <h1 class="mt-4">Teacher List</h1>
+    <h1 class="mt-4">Staff List</h1>
 
     <table class="table mt-4">
       <thead>
@@ -15,19 +15,19 @@
         </tr>
       </thead>
       <tbody>
-        {% for teacher in teachers %}
-          <tr data-teacher-id="{{ teacher.id }}" class="teacher-row">
-            <td>{{ teacher.name }}</td>
-            <td>{{ teacher.email }}</td>
-            <td>{{ "Active" if teacher.is_active else "Inactive" }}</td>
-            <td>{{ teacher.user_type }}</td>
+        {% for staff_member in staff %}
+          <tr data-staff-id="{{ staff_member.id }}" class="staff-row">
+            <td>{{ staff_member.name }}</td>
+            <td>{{ staff_member.email }}</td>
+            <td>{{ "Active" if staff_member.is_active else "Inactive" }}</td>
+            <td>{{ staff_member.user_type }}</td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
 
     <div class="mt-3">
-        <a class="btn btn-primary" href="{{ url_for('teacher.teacher_register') }}">Add Teacher</a>
+        <a class="btn btn-primary" href="{{ url_for('staff.staff_register') }}">Add Staff Member</a>
     </div>
 </div>
     <!-- Add Bootstrap JS and jQuery scripts here -->
@@ -43,18 +43,18 @@
 
     <script>
   $(document).ready(function () {
-    $(".teacher-row").on("click", function () {
-      const teacherId = $(this).data('teacher-id');
-      if (teacherId) {
-        window.location.href = "{{ url_for('admin.teacher_edit', teacher_id=0) }}" + teacherId
+    $(".staff-row").on("click", function () {
+      const staffId = $(this).data('staff-id');
+      if (staffId) {
+        window.location.href = "{{ url_for('admin.staff_edit', staff_id=0) }}" + staffId
       }
     });
 
-    $(".teacher-row").on("mouseover", function () {
+    $(".staff-row").on("mouseover", function () {
       $(this).addClass("highlight");
     });
 
-    $(".teacher-row").on("mouseout", function () {
+    $(".staff-row").on("mouseout", function () {
       $(this).removeClass("highlight");
     });
   });

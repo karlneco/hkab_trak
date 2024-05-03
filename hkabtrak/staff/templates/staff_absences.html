@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+    <title>Absences</title>
+    <!-- Include Bootstrap CSS from CDN for styling -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-3">
+        <h1>Absences</h1>
+        <table class="table table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Reason</th>
+                    <th>Date</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Parent Email</th>
+                    <th>Comment</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for absence in classes.absences %}
+                <tr>
+                    <td>{{ absence.student_name }}</td>
+                    <td>{{ absence.reason }}</td>
+                    <td>{{ absence.date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ absence.start_time.strftime('%H:%M') if absence.start_time else 'N/A' }}</td>
+                    <td>{{ absence.end_time.strftime('%H:%M') if absence.end_time else 'N/A' }}</td>
+                    <td>{{ absence.parent_email }}</td>
+                    <td style="white-space: pre-wrap;">{{ absence.comment }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{{ url_for('staff.staff_logout') }}" class="btn btn-danger">Logout</a>
+    </div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>
