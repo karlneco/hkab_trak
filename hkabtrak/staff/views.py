@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, get_flashed_messages
 from hkabtrak.models import Class, load_user, User, Absence
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -68,9 +68,14 @@ def staff_login():
             if user.user_type == 'A':
                 return redirect(url_for('admin.admin_main'))
 
+            # Retrieve and clear all flashed messages
+            get_flashed_messages(with_categories=True)
             return redirect(url_for('staff.staff_view'))
         else:
-            return 'Invalid username or password'
+            flash('Invalid credentials. Please try again.', 'danger')
+
+    else:
+        get_flashed_messages(with_categories=True)
 
     return render_template('staff_login.html')
 

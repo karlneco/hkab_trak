@@ -10,6 +10,7 @@ admin_bp = Blueprint('admin', __name__, template_folder='templates')
 
 @admin_bp.route('/admin')
 @admin_bp.route('/main', methods=['GET'])
+@login_required
 def admin_main():
     return render_template('home.html')
 
@@ -17,7 +18,7 @@ def admin_main():
 @admin_bp.route('/logout', methods=['GET'])
 def logout():
     logout_user()
-    return render_template('index.html')
+    return redirect('/')
 
 
 @admin_bp.route('/staff')

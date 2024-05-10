@@ -1,0 +1,8 @@
+flask
+werkzeug
+sqlalchemy
+boto3
+alembic
+flask_sqlalchemy
+flask_migrate
+flask_login

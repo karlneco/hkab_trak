@@ -8,9 +8,8 @@ absences_bp = Blueprint('absences', __name__, template_folder='templates')
 
 valid_reasons = ['Absent', 'Late', 'Leaving Early', 'Absent for a Time', '欠席', '遅刻', '早退', '時間で欠席']
 
-@absences_bp.route('/absences')
-@absences_bp.route('/submit_absence', methods=['GET', 'POST'])
-def submit_absence():
+@absences_bp.route('/record_absence', methods=['GET', 'POST'])
+def record_absence():
     if request.method == 'POST':
         parent_email = request.form['parent_email']
         class_id = request.form['class_id']

@@ -1,0 +1,6 @@
+migrations
+instance/data.sqlite
+instance/data.sqlite.bak
+awsupdate.sh
+dev.sh
+start.sh
