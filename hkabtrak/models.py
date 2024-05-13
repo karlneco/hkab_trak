@@ -22,6 +22,10 @@ class Class(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True, unique=True)
     instructions = db.Column(db.String(512), nullable=True)
+    day_start = db.Column(db.Time, nullable=True)
+    lunch_start = db.Column(db.Time, nullable=True)
+    lunch_end = db.Column(db.Time, nullable=True)
+    day_end = db.Column(db.Time, nullable=True)
     staff = db.relationship('User', secondary=staff_class, back_populates='classes')
     absences = db.relationship('Absence', back_populates='course')
 

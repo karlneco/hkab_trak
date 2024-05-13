@@ -25,11 +25,34 @@ def create_app(cf=None):
     initialize_extensions(app)
     register_blueprints(app)
 
-    # Create the default admin user after initializing extensions
-    with app.app_context():
-        create_default_admin()
+    # Register custom CLI command
+    register_commands(app)
 
     return app
+
+
+def register_commands(app):
+    @app.cli.command("create-admin")
+    def create_admin():
+        """Create the default admin user."""
+        from hkabtrak.models import User  # Make sure this import is inside the function to avoid early import issues
+        admin_email = "admin@example.com"
+        default_password = "admin123"
+
+        # Check if the admin user already exists
+        existing_admin = User.query.filter_by(email=admin_email).first()
+        if not existing_admin:
+            new_admin = User(
+                email=admin_email,
+                password=default_password,
+                name="Default Admin",
+                user_type="A"
+            )
+            db.session.add(new_admin)
+            db.session.commit()
+            print("Default admin user created")
+        else:
+            print("Admin user already exists")
 
 
 # Initialize Extensions
@@ -53,30 +76,3 @@ def register_blueprints(app):
     app.register_blueprint(courses_bp, url_prefix='/courses')
     app.register_blueprint(admin_bp, url_prefix='/admin')
     from hkabtrak import views
-
-
-# Function to create the default admin user
-def create_default_admin():
-    from hkabtrak.models import User  # Import the User model after initializing the database
-
-    admin_email = "admin@example.com"  # Replace with the desired default email
-    default_password = "admin123"  # Replace with the desired default password
-
-    # Check if the admin user already exists
-    existing_admin = User.query.filter_by(email=admin_email).first()
-
-    if not existing_admin:
-        # Create the default admin user if it doesn't exist
-        hashed_password = generate_password_hash(default_password)
-        new_admin = User(
-            email=admin_email,
-            password=default_password,
-            name="Default Admin",
-            user_type="A",  # Assuming "A" is the code for admin
-        )
-
-        db.session.add(new_admin)
-        db.session.commit()
-        print("Default admin user created")
-    else:
-        print("Admin user already exists")

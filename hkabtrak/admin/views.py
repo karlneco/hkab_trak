@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from hkabtrak.models import Class, load_user, User
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
@@ -60,24 +62,6 @@ def staff_edit(staff_id):
 def course_list():
     courses = Class.query.all()
     return render_template('courses.html', courses=courses)
-
-
-@admin_bp.route('/courses/edit/<int:course_id>', methods=['GET', 'POST'])
-@login_required
-def course_edit(course_id):
-    course = Class.query.get_or_404(course_id)
-    # Filter staff into teachers and assistants
-    teachers = [user for user in course.staff if user.user_type == 'T']
-    assistants = [user for user in course.staff if user.user_type == 'H']
-
-    if request.method == 'POST':
-        # Since no editing of teachers or assistants, only handle other fields
-        course.name = request.form['name']
-        course.instructions = request.form['instructions']
-        db.session.commit()
-        return redirect(url_for('admin.course_list'))
-
-    return render_template('course_edit.html', course=course, teachers=teachers, assistants=assistants)
 
 
 @admin_bp.route('/admin/reset_password/<int:staff_id>', methods=['POST'])

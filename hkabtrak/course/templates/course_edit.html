@@ -1,0 +1,112 @@
+{% extends "chrome.html" %}
+
+{% block content %}
+    <style>
+        .list-group-item:hover {
+            cursor: pointer; /* Change cursor to indicate interactivity */
+        }
+
+        .highlight {
+            background-color: #f8f9fa; /* Light gray background on hover */
+        }
+    </style>
+    <div class="container mt-5">
+        <h1>Edit Class</h1>
+        <form method="post" action="{{ url_for('course.edit', course_id=course.id) }}">
+            <div class="mb-3">
+                <label for="name" class="form-label">Name</label>
+                <input type="text" class="form-control" id="name" name="name" value="{{ course.name }}">
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="form-label">Teacher(s):</label>
+                    <ul class="list-group">
+                        {% for teacher in teachers %}
+                            <li class="list-group-item staff-row" data-staff-id="{{ teacher.id }}">
+                                {{ teacher.name }}
+                            </li>
+                        {% else %}
+                            <li class="list-group-item">None assigned</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Assistant(s):</label>
+                    <ul class="list-group">
+                        {% for assistant in assistants %}
+                            <li class="list-group-item staff-row" data-staff-id="{{ assistant.id }}">
+                                {{ assistant.name }}
+                            </li>
+                        {% else %}
+                            <li class="list-group-item">None assigned</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="day_start" class="form-label">Day Start:</label>
+                <input type="time" class="form-control" id="day_start" name="day_start"
+                       value="{{ course.day_start.strftime('%H:%M')  }}">
+            </div>
+            <div class="mb-3">
+                <label for="lunch_start" class="form-label">Lunch Start:</label>
+                <input type="time" class="form-control" id="lunch_start" name="lunch_start"
+                       value="{{ course.lunch_start.strftime('%H:%M')  }}">
+            </div>
+            <div class="mb-3">
+                <label for="lunch_end" class="form-label">Lunch End:</label>
+                <input type="time" class="form-control" id="lunch_end" name="lunch_end"
+                       value="{{ course.lunch_end.strftime('%H:%M')  }}">
+            </div>
+            <div class="mb-3">
+                <label for="day_end" class="form-label">Day End:</label>
+                <input type="time" class="form-control" id="day_end" name="day_end" value="{{ course.day_end.strftime('%H:%M')  }}">
+            </div>
+
+            <div class="mb-3">
+                <label for="instructions" class="form-label">Teacher Instructions:</label>
+                <textarea class="form-control" id="instructions" name="instructions"
+                          rows="4">{{ course.instructions }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Save</button>
+            <button type="button" class="btn btn-secondary" onclick="duplicateCourse()">Duplicate</button>
+            <button type="button" class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+
+        </form>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $(".staff-row").on("click", function () {
+                const staffId = $(this).data('staff-id');
+                if (staffId) {
+                    window.location.href = "{{ url_for('admin.staff_edit', staff_id=0) }}" + staffId;
+                }
+            });
+
+            $(".staff-row").on("mouseover", function () {
+                $(this).addClass("highlight");
+            });
+
+            $(".staff-row").on("mouseout", function () {
+                $(this).removeClass("highlight");
+            });
+        });
+
+        function duplicateCourse() {
+            // Modify the action URL for the form to the duplicate route
+            const form = document.querySelector('form');
+            form.action = "{{ url_for('course.duplicate', course_id=course.id) }}";
+            form.submit();
+        }
+
+        function confirmDelete() {
+            if (confirm('Are you sure you want to delete this course?')) {
+                // Redirect to the delete route if confirmed
+                window.location.href = "{{ url_for('course.delete', course_id=course.id) }}";
+            }
+        }
+
+    </script>
+
+{% endblock %}
