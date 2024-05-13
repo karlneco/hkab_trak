@@ -38,7 +38,7 @@ def create():
             db.session.add(new_semester)
             db.session.commit()
 
-            flash('Semester created successfully!', 'info')
+            flash('Semester created successfully!', 'success')
             return redirect(url_for('semester.semester_list'))
         except IntegrityError:
             db.session.rollback()  # Roll back the transaction so you can continue using the session
@@ -58,7 +58,7 @@ def edit(semester_id):
         semester.start_date = request.form['start_date']
         semester.end_date = request.form['end_date']
         db.session.commit()
-        flash('Semester updated successfully!')
+        flash('Semester updated successfully!', 'success')
         return redirect(url_for('semester_list'))
 
     return render_template('semester_edit.html', semester=semester)
