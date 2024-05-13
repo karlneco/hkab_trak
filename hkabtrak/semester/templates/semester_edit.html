@@ -1,0 +1,35 @@
+{% extends "chrome.html" %}
+
+{% block content %}
+<div class="container-sm">
+    <h1 class="mt-5">Edit Semester</h1>
+    <form action="{{ url_for('semester.edit', semester_id=semester.id) }}" method="post" class="mt-4">
+        <div class="form-group">
+            <label for="name">Semester Name:</label>
+            <input type="text" id="name" name="name" class="form-control" value="{{ semester.name }}" required>
+        </div>
+        <div class="form-group">
+            <label for="start_date">Start Date:</label>
+            <input type="date" id="start_date" name="start_date" class="form-control" value="{{ semester.start_date }}" required>
+        </div>
+        <div class="form-group">
+            <label for="end_date">End Date:</label>
+            <input type="date" id="end_date" name="end_date" class="form-control" value="{{ semester.end_date }}" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Update Semester</button>
+        <button type="button" class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+    </form>
+
+    <script>
+        function confirmDelete() {
+            if (confirm('Are you sure you want to delete this semester?')) {
+                window.location.href = "{{ url_for('semester.delete', semester_id=semester.id) }}";
+            }
+        }
+    </script>
+
+    <!-- Bootstrap and jQuery scripts included as before -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
+</div>
+{% endblock %}

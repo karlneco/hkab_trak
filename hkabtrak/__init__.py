@@ -2,7 +2,6 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
-from werkzeug.security import generate_password_hash
 
 # Config
 db = SQLAlchemy()
@@ -69,10 +68,12 @@ def register_blueprints(app):
     from hkabtrak.staff.views import staff_bp
     from hkabtrak.course.views import courses_bp
     from hkabtrak.admin.views import admin_bp
+    from hkabtrak.semester.views import semester_bp
 
     app.register_blueprint(root_bp, url_prefix='/')
     app.register_blueprint(absences_bp, url_prefix='/absences')
     app.register_blueprint(staff_bp, url_prefix='/staff')
     app.register_blueprint(courses_bp, url_prefix='/courses')
     app.register_blueprint(admin_bp, url_prefix='/admin')
+    app.register_blueprint(semester_bp, url_prefix='/semester')
     from hkabtrak import views

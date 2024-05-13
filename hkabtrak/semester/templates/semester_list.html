@@ -1,0 +1,56 @@
+{% extends "chrome.html" %}
+
+{% block content %}
+<div class="container-sm">
+    <h1 class="mt-4">Semester List</h1>
+    <table class="table mt-4">
+      <thead>
+        <tr>
+          <th>Semester</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for semester in semesters %}
+          <tr data-semester-id="{{ semester.id }}" class="semester-row">
+            <td>{{ semester.name }}</td>
+            <td>{{ semester.start_date }}</td>
+            <td>{{ semester.end_date }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="mt-3">
+        <a class="btn btn-primary" href="{{ url_for('semester.create') }}">Add a New Semester</a>
+    </div>
+</div>
+    <!-- Bootstrap JS and jQuery scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
+
+    <style>
+        .highlight {
+            background-color: #f0f0f0; /* Light gray background on hover */
+        }
+    </style>
+
+    <script>
+        $(document).ready(function () {
+            $(".semester-row").on("click", function () {
+                const semesterId = $(this).data('semester-id');
+                if (semesterId) {
+                    window.location.href = "{{ url_for('semester.edit', semester_id=0) }}" + semesterId;
+                }
+            });
+
+            $(".semester-row").on("mouseover", function () {
+                $(this).addClass("highlight");
+            });
+
+            $(".semester-row").on("mouseout", function () {
+                $(this).removeClass("highlight");
+            });
+        });
+    </script>
+{% endblock %}
