@@ -27,7 +27,14 @@ def logout():
 @login_required
 def staff_list():
     staff = User.query.all()
-    return render_template('staff_list.html', staff=staff)
+    user_types = {
+        'T': 'Teacher',
+        'H': 'Teacher Assistant',
+        'A': 'Administrator',
+        'N': 'Not Specified'
+    }
+
+    return render_template('staff_list.html', staff=staff, user_types=user_types)
 
 
 @admin_bp.route('/staff/edit/<int:staff_id>', methods=['GET', 'POST'])

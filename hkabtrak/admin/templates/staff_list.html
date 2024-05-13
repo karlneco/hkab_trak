@@ -20,7 +20,7 @@
             <td>{{ staff_member.name }}</td>
             <td>{{ staff_member.email }}</td>
             <td>{{ "Active" if staff_member.is_active else "Inactive" }}</td>
-            <td>{{ staff_member.user_type }}</td>
+            <td>{{ user_types[staff_member.user_type] }}</td>
           </tr>
         {% endfor %}
       </tbody>
