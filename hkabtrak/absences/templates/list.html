@@ -1,16 +1,10 @@
-<!doctype html>
-<html>
-<head>
-    <title>Absences Overview</title>
-    <!-- Include Bootstrap CSS from CDN for styling -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-</head>
+{% extends "chrome.html" %}
+
+{% block content %}
 <script>
     var thisWeekOnly = true;
     var currentClass = 'all';
 </script>
-<body>
 <div class="container mt-3">
     <h1>Absences Overview</h1>
     <!-- Class Buttons for Filtering -->
@@ -68,7 +62,12 @@
             </tbody>
         </table>
     </div>
-    <a href="{{ url_for('staff.staff_logout') }}" class="btn btn-danger">Logout</a>
+    <div class="float-right">
+        <a href="{{ url_for('staff.staff_logout') }}" class="btn btn-danger">Logout</a>
+    </div>
+    <div>
+        <a href="{{ url_for('absences.students') }}" class="btn btn-primary">Student Absences</a>
+    </div>
 </div>
 
 <script>
@@ -117,10 +116,4 @@
     }
 </script>
 
-<!-- Optional JavaScript -->
-<!-- jQuery first, then Popper.js, then Bootstrap JS -->
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-</body>
-</html>
+{% endblock %}

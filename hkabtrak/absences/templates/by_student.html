@@ -1,0 +1,29 @@
+{% extends "chrome.html" %}
+
+{% block content %}
+<div class="container mt-3">
+    <h1>Class Absences Overview</h1>
+    {% for class_name, students in class_absences.items() %}
+    <h2>{{ class_name }}</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Total Absence Time (hours)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student_name, hours in students.items() %}
+            <tr>
+                <td>{{ student_name }}</td>
+                <td>{{ "%.2f" | format(hours) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endfor %}
+</div>
+
+
+
+{% endblock %}

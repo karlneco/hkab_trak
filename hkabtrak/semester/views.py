@@ -14,7 +14,7 @@ semester_bp = Blueprint('semester', __name__, template_folder='templates')
 @semester_bp.route('/list', methods=['GET'])
 @login_required
 def semester_list():
-    semesters = Semester.query.all()
+    semesters = Semester.query.order_by(Semester.start_date.desc()).all()
     return render_template('semester_list.html', semesters=semesters)
 
 
@@ -55,11 +55,13 @@ def edit(semester_id):
 
     if request.method == 'POST':
         semester.name = request.form['name']
-        semester.start_date = request.form['start_date']
-        semester.end_date = request.form['end_date']
+        start_date_str = request.form['start_date']
+        end_date_str = request.form['end_date']
+        semester.start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        semester.end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
         db.session.commit()
         flash('Semester updated successfully!', 'success')
-        return redirect(url_for('semester_list'))
+        return redirect(url_for('semester.semester_list'))
 
     return render_template('semester_edit.html', semester=semester)
 

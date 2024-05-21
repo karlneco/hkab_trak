@@ -34,10 +34,10 @@ def index():
             return redirect(url_for('submit_absence'))
 
         # Validate date is not in the past
-        today = date.today()
-        if absence_date < today:
-            flash('The date cannot be in the past.', 'error')
-            return redirect(url_for('submit_absence'))
+        # today = date.today()
+        # if absence_date < today:
+        #     flash('The date cannot be in the past.', 'error')
+        #     return redirect(url_for('submit_absence'))
 
         # Validate email format (simple check)
         if '@' not in parent_email or '.' not in parent_email.split('@')[-1]:

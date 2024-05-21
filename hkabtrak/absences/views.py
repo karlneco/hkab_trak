@@ -1,7 +1,7 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from hkabtrak.models import Absence, Class
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
+from hkabtrak.models import Absence, Class, load_user, User
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from hkabtrak import db
 
 absences_bp = Blueprint('absences', __name__, template_folder='templates')
@@ -27,35 +27,35 @@ def record_absence():
             print("Parsed date:", absence_date)  # Debugging line
         except ValueError:
             flash('Invalid date and/or time format.', 'error')
-            return redirect(url_for('submit_absence'))
+            return redirect(url_for('record_absence'))
 
 
         # Validate date is not in the past
-        today = date.today()
-        if absence_date < today:
-            flash('The date cannot be in the past.', 'error')
-            return redirect(url_for('submit_absence'))
+        # today = date.today()
+        # if absence_date < today:
+        #     flash('The date cannot be in the past.', 'error')
+        #     return redirect(url_for('record_absence'))
 
         # Validate email format (simple check)
         if '@' not in parent_email or '.' not in parent_email.split('@')[-1]:
             flash('Invalid email format.', 'error')
-            return redirect(url_for('submit_absence'))
+            return redirect(url_for('record_absence'))
 
         # Validate reason
         if reason not in valid_reasons:
             flash('Invalid reason for absence.', 'error')
-            return redirect(url_for('submit_absence'))
+            return redirect(url_for('record_absence'))
 
         # Additional validation based on reason
         if reason == "Late" and not start_time:
             flash('Expected time is required for "Late".', 'error')
-            return redirect(url_for('submit_absence'))
+            return redirect(url_for('record_absence'))
         if reason == "Leaving Early" and not end_time:
             flash('Leaving time is required for "Leaving Early".', 'error')
-            return redirect(url_for('submit_absence'))
+            return redirect(url_for('record_absence'))
         if reason == "Absent for a Time" and (not start_time or not end_time):
             flash('Both leaving and return times are required for "Absent for a Time".', 'error')
-            return redirect(url_for('submit_absence'))
+            return redirect(url_for('record_absence'))
 
 
         absence = Absence(student_name=student_name, reason=reason, class_id=class_id, date=absence_date, start_time=start_time, end_time=end_time, parent_email=parent_email, comment=comment)
@@ -72,10 +72,88 @@ def record_absence():
 def thank_you():
     return render_template('absence_submited.html')
 
-@absences_bp.route('/all_absences')
-@login_required
-def all_absences():
-    absences = Absence.query.join(Class).order_by(Absence.date.desc()).all()
-    return render_template('all_absences.html', absences=absences)
 
+@absences_bp.route('/list', methods=['GET', 'POST'])
+@login_required
+def list():
+    user = load_user(current_user.get_id())
+    if not user:
+        return redirect(url_for('login'))
+
+    classes = user.classes
+    all_absences = []
+    for class_obj in classes:
+        absences = Absence.query.filter_by(class_id=class_obj.id).all()
+        all_absences.extend(absences)
+
+    all_absences_sorted = sorted(all_absences, key=lambda x: x.date, reverse=True)
+    this_saturday = date.today() + timedelta((5 - date.today().weekday()) % 7)
+
+    return render_template('list.html', absences=all_absences_sorted, classes=classes, this_saturday=this_saturday)
+
+
+@absences_bp.route('/students')
+@login_required
+def students():
+    # Fetch all classes where the teacher is involved
+    classes = Class.query.join(Class.staff).filter(User.id == current_user.id).all()
+    absence_summary = []
+
+    class_absences_summary = {}
+
+    for cls in classes:
+        student_hours = {}
+        for absence in cls.absences:
+            duration = calculate_absence_duration(cls, absence)
+            if absence.student_name in student_hours:
+                student_hours[absence.student_name] += duration
+            else:
+                student_hours[absence.student_name] = duration
+
+        if student_hours:
+            class_absences_summary[cls.name] = student_hours
+
+    return render_template('by_student.html', class_absences=class_absences_summary)
+
+def calculate_absence_duration(cls, absence):
+
+    # Start and end times of the class and lunch
+    class_start = datetime.combine(absence.date, cls.day_start)
+    class_end = datetime.combine(absence.date, cls.day_end)
+    lunch_start = datetime.combine(absence.date, cls.lunch_start)
+    lunch_end = datetime.combine(absence.date, cls.lunch_end)
+
+    match absence.reason:
+        case 'Absent':
+            absence_start = class_start
+            absence_end = class_end
+        case 'Late':
+            absence_start = class_start
+            absence_end = datetime.combine(absence.date, absence.start_time)
+        case 'Leaving Early':
+            absence_start = datetime.combine(absence.date, absence.end_time)
+            absence_end = class_end
+        case 'Absent for a Time':
+            absence_start = datetime.combine(absence.date, absence.start_time)
+            absence_end = datetime.combine(absence.date, absence.end_time)
+
+
+    # Adjust absence start and end times to be within the class hours
+    absence_start = max(absence_start, class_start)
+    absence_end = min(absence_end, class_end)
+
+    # Calculate total duration excluding lunch
+    if absence_end <= lunch_start:
+        # Absence ends before lunch starts
+        duration = absence_end - absence_start
+    elif absence_start >= lunch_end:
+        # Absence starts after lunch ends
+        duration = absence_end - absence_start
+    else:
+        # Absence spans over the lunch period
+        pre_lunch = max(timedelta(0), lunch_start - absence_start)
+        post_lunch = max(timedelta(0), absence_end - lunch_end)
+        duration = pre_lunch + post_lunch
+
+    return duration.total_seconds() / 3600  # Convert duration to hours
 

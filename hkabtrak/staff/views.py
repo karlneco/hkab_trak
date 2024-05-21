@@ -36,24 +36,6 @@ def staff_register():
     return render_template('staff_register.html')
 
 
-@staff_bp.route('/staff_view', methods=['GET', 'POST'])
-@login_required
-def staff_view():
-    user = load_user(current_user.get_id())
-    if not user:
-        return redirect(url_for('login'))
-
-    classes = user.classes
-    all_absences = []
-    for class_obj in classes:
-        absences = Absence.query.filter_by(class_id=class_obj.id).all()
-        all_absences.extend(absences)
-
-    all_absences_sorted = sorted(all_absences, key=lambda x: x.date, reverse=True)
-    this_saturday = date.today() + timedelta((5 - date.today().weekday()) % 7)
-
-    return render_template('staff_absences.html', absences=all_absences_sorted, classes=classes, this_saturday=this_saturday)
-
 
 @staff_bp.route('/staff_login', methods=['GET', 'POST'])
 def staff_login():
@@ -64,13 +46,14 @@ def staff_login():
 
         if user and user.check_password(password):
             login_user(user)
+            current_user.type = user.user_type
             flash('Login Successful')
             if user.user_type == 'A':
                 return redirect(url_for('admin.admin_main'))
 
             # Retrieve and clear all flashed messages
             get_flashed_messages(with_categories=True)
-            return redirect(url_for('staff.staff_view'))
+            return redirect(url_for('absences.list'))
         else:
             flash('Invalid credentials. Please try again.', 'danger')
 
