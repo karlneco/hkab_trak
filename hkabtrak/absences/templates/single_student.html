@@ -2,11 +2,12 @@
 
 {% block content %}
 <div class="container mt-3">
-    <h1>Class Absences Overview</h1>
-    <form action="{{ url_for('absences.students') }}" method="get">
+    <h1>{{ student_name }}'s Absences Overview</h1>
+    <form action="{{ url_for('absences.student_absences', grade=grade, student_name=student_name) }}" method="get">
         <div class="form-group">
             <label for="semesterSelect">Select Semester:</label>
             <select name="semester_id" id="semesterSelect" class="form-control" onchange="this.form.submit()">
+                <option value="-1" {% if not selected_semester %}selected{% endif %}>All Time</option>
                 {% for semester in semesters %}
                 <option value="{{ semester.id }}" {% if selected_semester and selected_semester.id == semester.id %}selected{% endif %}>
                     {{ semester.name }} ({{ semester.start_date.strftime('%Y-%m-%d') }} - {{ semester.end_date.strftime('%Y-%m-%d') }})
@@ -16,27 +17,26 @@
         </div>
     </form>
 
-    {% for (class_name, class_id), students in class_absences.items() %}
-    <h2>{{ class_name }}</h2>
     <table class="table">
         <thead>
             <tr>
-                <th>Student Name</th>
-                <th>Total Absence Time (hours)</th>
+                <th>Date</th>
+                <th>Reason</th>
+                <th>Missed (hours)</th>
+                <th>Comment</th>
             </tr>
         </thead>
         <tbody>
-            {% for student_name, hours in students.items() %}
+            {% for absence in absences %}
             <tr>
-                <td><a href="{{  url_for('absences.student_absences', grade=class_id, student_name=student_name) }}">{{ student_name }}</a></td>
-                <td>{{ "%.2f" | format(hours) }}</td>
+                <td>{{ absence.date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ absence.reason }} ({{  }})</td>
+                <td>{{ absence.duration }}</td>
+                <td>{{ absence.comment }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    {% endfor %}
 </div>
-
-
 
 {% endblock %}

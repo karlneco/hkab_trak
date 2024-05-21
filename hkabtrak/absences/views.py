@@ -2,11 +2,12 @@ from datetime import datetime, date, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from hkabtrak.models import Absence, Class, load_user, User, Semester
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from hkabtrak import db
+from hkabtrak import db, absences
 
 absences_bp = Blueprint('absences', __name__, template_folder='templates')
 
 valid_reasons = ['Absent', 'Late', 'Leaving Early', 'Absent for a Time', '欠席', '遅刻', '早退', '時間で欠席']
+
 
 @absences_bp.route('/record_absence', methods=['GET', 'POST'])
 def record_absence():
@@ -28,7 +29,6 @@ def record_absence():
         except ValueError:
             flash('Invalid date and/or time format.', 'error')
             return redirect(url_for('record_absence'))
-
 
         # Validate date is not in the past
         # today = date.today()
@@ -57,8 +57,8 @@ def record_absence():
             flash('Both leaving and return times are required for "Absent for a Time".', 'error')
             return redirect(url_for('record_absence'))
 
-
-        absence = Absence(student_name=student_name, reason=reason, class_id=class_id, date=absence_date, start_time=start_time, end_time=end_time, parent_email=parent_email, comment=comment)
+        absence = Absence(student_name=student_name, reason=reason, class_id=class_id, date=absence_date,
+                          start_time=start_time, end_time=end_time, parent_email=parent_email, comment=comment)
         db.session.add(absence)
         db.session.commit()
 
@@ -67,6 +67,7 @@ def record_absence():
     classes = Class.query.all()
     today = datetime.today().strftime('%Y-%m-%d')
     return render_template('new_absence.html', classes=classes, today=today)
+
 
 @absences_bp.route('/thank_you')
 def thank_you():
@@ -95,7 +96,6 @@ def list():
 @absences_bp.route('/students')
 @login_required
 def students():
-
     today = date.today()
 
     # Fetch all classes where the teacher is involved
@@ -104,7 +104,6 @@ def students():
     semesters = Semester.query.order_by(Semester.start_date.desc()).all()  # Order by start date descending
     selected_semester_id = request.args.get('semester_id', type=int)
 
-    class_absences_summary = {}
     if selected_semester_id:
         selected_semester = Semester.query.get(selected_semester_id)
     else:
@@ -130,12 +129,37 @@ def students():
                         student_hours[absence.student_name] = duration
 
             if student_hours:
-                class_absences_summary[cls.name] = student_hours
+                class_absences_summary[(cls.name, cls.id)] = student_hours
 
-    return render_template('by_student.html', class_absences=class_absences_summary, semesters=semesters, selected_semester=selected_semester)
+    return render_template('by_student.html', class_absences=class_absences_summary, semesters=semesters,
+                           selected_semester=selected_semester)
+
+
+@absences_bp.route('/student/<int:grade>/<student_name>/', methods=['GET', 'POST'])
+def student_absences(grade, student_name):
+    semesters = Semester.query.order_by(Semester.start_date.desc()).all()
+    selected_semester_id = request.args.get('semester_id', type=int)
+
+    if selected_semester_id is None or selected_semester_id == -1:  # -1 for 'All Time'
+        absences = Absence.query.join(Absence.course).filter(Absence.student_name == student_name,
+                                                             Class.id == grade).all()
+        selected_semester = None
+    else:
+        selected_semester = Semester.query.get(selected_semester_id)
+        absences = Absence.query.join(Absence.course).filter(
+            Absence.student_name == student_name,
+            Absence.date.between(selected_semester.start_date, selected_semester.end_date),
+            Class.id == grade
+        ).all()
+
+    for absence in absences:
+        duration = calculate_absence_duration(absence.course, absence)
+        setattr(absence, 'duration', duration)
+
+    return render_template('single_student.html', absences=absences, semesters=semesters,
+                           selected_semester=selected_semester, student_name=student_name, grade=grade)
 
 def calculate_absence_duration(cls, absence):
-
     # Start and end times of the class and lunch
     class_start = datetime.combine(absence.date, cls.day_start)
     class_end = datetime.combine(absence.date, cls.day_end)
@@ -155,7 +179,6 @@ def calculate_absence_duration(cls, absence):
         case 'Absent for a Time':
             absence_start = datetime.combine(absence.date, absence.start_time)
             absence_end = datetime.combine(absence.date, absence.end_time)
-
 
     # Adjust absence start and end times to be within the class hours
     absence_start = max(absence_start, class_start)
