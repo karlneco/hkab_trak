@@ -3,6 +3,19 @@
 {% block content %}
 <div class="container mt-3">
     <h1>Class Absences Overview</h1>
+    <form action="{{ url_for('absences.students') }}" method="get">
+        <div class="form-group">
+            <label for="semesterSelect">Select Semester:</label>
+            <select name="semester_id" id="semesterSelect" class="form-control" onchange="this.form.submit()">
+                {% for semester in semesters %}
+                <option value="{{ semester.id }}" {% if selected_semester and selected_semester.id == semester.id %}selected{% endif %}>
+                    {{ semester.name }} ({{ semester.start_date.strftime('%Y-%m-%d') }} - {{ semester.end_date.strftime('%Y-%m-%d') }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+
     {% for class_name, students in class_absences.items() %}
     <h2>{{ class_name }}</h2>
     <table class="table">

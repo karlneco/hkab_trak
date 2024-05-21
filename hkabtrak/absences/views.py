@@ -1,6 +1,6 @@
 from datetime import datetime, date, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from hkabtrak.models import Absence, Class, load_user, User
+from hkabtrak.models import Absence, Class, load_user, User, Semester
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from hkabtrak import db
 
@@ -95,25 +95,44 @@ def list():
 @absences_bp.route('/students')
 @login_required
 def students():
+
+    today = date.today()
+
     # Fetch all classes where the teacher is involved
     classes = Class.query.join(Class.staff).filter(User.id == current_user.id).all()
-    absence_summary = []
+
+    semesters = Semester.query.order_by(Semester.start_date.desc()).all()  # Order by start date descending
+    selected_semester_id = request.args.get('semester_id', type=int)
 
     class_absences_summary = {}
+    if selected_semester_id:
+        selected_semester = Semester.query.get(selected_semester_id)
+    else:
+        # Default to the current semester
+        for semester in semesters:
+            if semester.start_date <= today <= semester.end_date:
+                selected_semester = semester
+                break
+        # If no current semester, default to the most recent one
+        if not selected_semester and semesters:
+            selected_semester = semesters[0]
 
-    for cls in classes:
-        student_hours = {}
-        for absence in cls.absences:
-            duration = calculate_absence_duration(cls, absence)
-            if absence.student_name in student_hours:
-                student_hours[absence.student_name] += duration
-            else:
-                student_hours[absence.student_name] = duration
+    class_absences_summary = {}
+    if selected_semester:
+        for cls in classes:
+            student_hours = {}
+            for absence in cls.absences:
+                if selected_semester.start_date <= absence.date <= selected_semester.end_date:
+                    duration = calculate_absence_duration(cls, absence)
+                    if absence.student_name in student_hours:
+                        student_hours[absence.student_name] += duration
+                    else:
+                        student_hours[absence.student_name] = duration
 
-        if student_hours:
-            class_absences_summary[cls.name] = student_hours
+            if student_hours:
+                class_absences_summary[cls.name] = student_hours
 
-    return render_template('by_student.html', class_absences=class_absences_summary)
+    return render_template('by_student.html', class_absences=class_absences_summary, semesters=semesters, selected_semester=selected_semester)
 
 def calculate_absence_duration(cls, absence):
 
