@@ -30,7 +30,7 @@
             {% for absence in absences %}
             <tr>
                 <td>{{ absence.date.strftime('%Y-%m-%d') }}</td>
-                <td>{{ absence.reason }} ({{  }})</td>
+                <td>{{ absence.reason }}</td>
                 <td>{{ absence.duration }}</td>
                 <td>{{ absence.comment }}</td>
             </tr>
