@@ -15,7 +15,7 @@ ADD . '/usr/app'
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
 # Exposing the flask app port from container to host
-EXPOSE 5000
+EXPOSE 1473
 
 RUN chmod u+x /usr/app/entrypoint.sh
 ENTRYPOINT ["/usr/app/entrypoint.sh"]
