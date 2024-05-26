@@ -4,7 +4,9 @@
     <option name="enabled" value="true" />
   </component>
   <component name="NewModuleRootManager">
-    <content url="file://$MODULE_DIR$" />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/hkabtrak/tests" isTestSource="true" />
+    </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
@@ -16,7 +18,12 @@
     <option name="TEMPLATE_CONFIGURATION" value="Jinja2" />
     <option name="TEMPLATE_FOLDERS">
       <list>
-        <option value="$MODULE_DIR$/templates" />
+        <option value="$MODULE_DIR$/hkabtrak/absences/templates" />
+        <option value="$MODULE_DIR$/hkabtrak/admin/templates" />
+        <option value="$MODULE_DIR$/hkabtrak/course/templates" />
+        <option value="$MODULE_DIR$/hkabtrak/semester/templates" />
+        <option value="$MODULE_DIR$/hkabtrak/staff/templates" />
+        <option value="$MODULE_DIR$/hkabtrak/templates" />
       </list>
     </option>
   </component>

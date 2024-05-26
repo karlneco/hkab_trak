@@ -48,15 +48,23 @@ def record_absence():
             return redirect(url_for('record_absence'))
 
         # Additional validation based on reason
-        if reason == "Late" and not start_time:
+        if absence_type == "Late" and not start_time:
             flash('Expected time is required for "Late".', 'error')
             return redirect(url_for('record_absence'))
-        if reason == "Leaving Early" and not end_time:
+        if absence_type == "Leaving Early" and not end_time:
             flash('Leaving time is required for "Leaving Early".', 'error')
             return redirect(url_for('record_absence'))
-        if reason == "Absent for a Time" and (not start_time or not end_time):
+        if absence_type == "Absent for a Time" and (not start_time or not end_time):
             flash('Both leaving and return times are required for "Absent for a Time".', 'error')
             return redirect(url_for('record_absence'))
+
+        reason = request.form['reason']
+        if reason == "Other":
+            other_reason = request.form.get('otherReason', '').strip()
+            if not other_reason:
+                flash('Please specify the reason for "Other".', 'error')
+                return redirect(url_for('record_absence'))
+            reason = f"Other: {other_reason}"  # Append the specific reason to 'Other'
 
         absence = Absence(student_name=student_name, reason=reason, absence_type=absence_type,
                   class_id=class_id, date=absence_date, start_time=start_time, end_time=end_time,
