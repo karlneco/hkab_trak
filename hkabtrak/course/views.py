@@ -64,6 +64,15 @@ def edit(course_id):
         course.lunch_end = datetime.strptime(lunch_end_str, '%H:%M').time() if lunch_end_str else None
         course.day_end = datetime.strptime(day_end_str, '%H:%M').time() if day_end_str else None
         db.session.commit()
+
+        if request.form['action'] == 'duplicate':
+            # Duplicate logic
+            new_course = Class(name="Copy of " + course.name, instructions=course.instructions, day_start=course.day_start,
+                               lunch_start=course.lunch_start, day_end=course.day_end, lunch_end=course.lunch_end)
+            db.session.add(new_course)
+            db.session.commit()
+            return redirect(url_for('course.edit', course_id=new_course.id))
+
         return redirect(url_for('admin.course_list'))
 
     return render_template('course_edit.html', course=course, teachers=teachers, assistants=assistants)
