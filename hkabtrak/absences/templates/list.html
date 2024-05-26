@@ -7,15 +7,28 @@
 </script>
 <div class="container mt-3">
     <h1>Absences Overview</h1>
-    <!-- Class Buttons for Filtering -->
-    <div class="btn-group mb-3" role="group" aria-label="Class Filters">
-        <button type="button" class="btn btn-secondary" onclick="filterAbsences('all', 'Absences for all your Classes')">All Classes</button>
-        {% for class in classes %}
-            <button type="button" class="btn btn-secondary"
-                    onclick="filterAbsences('{{ class.id }}', 'Absences for {{ class.name }}')">{{ class.name }}</button>
-        {% endfor %}
-        <button type="button" class="btn btn-info" id="modeButton" onclick="showNonCurrentAbsences()">Show Past and Future Absences</button>
+    <div class="d-flex justify-content-between align-items-end">
+        <!-- Class Buttons for Filtering -->
+        <div>
+            <div class="btn-group mb-3" role="group" aria-label="Class Filters">
+                <button type="button" class="btn btn-secondary" onclick="filterAbsences('all', 'Absences for all your Classes')">All Classes</button>
+                {% for class in classes %}
+                    <button type="button" class="btn btn-secondary"
+                            onclick="filterAbsences('{{ class.id }}', 'Absences for {{ class.name }}')">{{ class.name }}</button>
+                {% endfor %}
+                <button type="button" class="btn btn-info" id="modeButton" onclick="showNonCurrentAbsences()">Show Past and Future Absences</button>
+            </div>
+        </div>
+
+        <!-- Date Selector -->
+        <div>
+            <div class="form-group">
+                <label for="filterDate" class="form-label">Select Date:</label>
+                <input type="date" class="form-control" id="filterDate" name="filterDate" onchange="filterByDate()">
+            </div>
+        </div>
     </div>
+
 
 {#    <div class="container mt-3 mb-3">#}
     <h2 id="currentClassHeading">Absences for all your Classes</h2> <!-- Dynamic heading -->
@@ -114,6 +127,19 @@
         modeButton.innerText="Show Past and Future Absences"
         modeButton.onclick= showNonCurrentAbsences;
     }
+
+    function filterByDate() {
+    const selectedDate = document.getElementById("filterDate").value;
+    const rows = document.querySelectorAll('.absence-entry');
+    rows.forEach(row => {
+        const absenceDate = row.cells[2].textContent; // Assuming the date is in the third column
+        if (absenceDate === selectedDate) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
 </script>
 
 {% endblock %}

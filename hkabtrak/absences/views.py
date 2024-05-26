@@ -93,14 +93,27 @@ def list():
 
     classes = user.classes
     all_absences = []
+    date_filter = request.args.get('filterDate')  # Get date filter from query parameters
+
+    try:
+        # Convert the date from string to datetime.date object if provided
+        selected_date = datetime.strptime(date_filter, '%Y-%m-%d').date() if date_filter else None
+    except TypeError:
+        selected_date = None
+
     for class_obj in classes:
-        absences = Absence.query.filter_by(class_id=class_obj.id).all()
+        if selected_date:
+            # Filter absences by class and selected date if a date is provided
+            absences = Absence.query.filter_by(class_id=class_obj.id, date=selected_date).all()
+        else:
+            # Get all absences if no date is provided
+            absences = Absence.query.filter_by(class_id=class_obj.id).all()
         all_absences.extend(absences)
 
     all_absences_sorted = sorted(all_absences, key=lambda x: x.date, reverse=True)
     this_saturday = date.today() + timedelta((5 - date.today().weekday()) % 7)
 
-    return render_template('list.html', absences=all_absences_sorted, classes=classes, this_saturday=this_saturday)
+    return render_template('list.html', absences=all_absences_sorted, classes=classes, this_saturday=this_saturday, selected_date=selected_date)
 
 
 @absences_bp.route('/students')
