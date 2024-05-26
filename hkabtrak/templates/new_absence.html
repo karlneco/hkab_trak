@@ -66,9 +66,9 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="reason" class="form-label">Reason:</label>
-                    <select class="form-select" id="reason" name="reason" required onchange="handleReasonChange()">
-                        <option value="">Select a Reason</option>
+                    <label for="absence_type" class="form-label">Type of Absence:</label>
+                    <select class="form-select" id="absence_type" name="absence_type" required onchange="handleReasonChange()">
+                        <option value="">Select a Type</option>
                         <option value="Absent">Absent</option>
                         <option value="Late">Late</option>
                         <option value="Leaving Early">Leaving Early</option>
@@ -128,7 +128,7 @@
     }
 
     function handleReasonChange() {
-        const reasonSelect = document.getElementById("reason");
+        const reasonSelect = document.getElementById("absence_type");
         const reason = reasonSelect.value;
 
         const startTimeSection = document.getElementById("start-time-section");

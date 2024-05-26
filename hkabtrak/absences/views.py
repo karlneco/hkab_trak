@@ -6,7 +6,7 @@ from hkabtrak import db, absences
 
 absences_bp = Blueprint('absences', __name__, template_folder='templates')
 
-valid_reasons = ['Absent', 'Late', 'Leaving Early', 'Absent for a Time', '欠席', '遅刻', '早退', '時間で欠席']
+valid_types = ['Absent', 'Late', 'Leaving Early', 'Absent for a Time', '欠席', '遅刻', '早退', '時間で欠席']
 
 
 @absences_bp.route('/record_absence', methods=['GET', 'POST'])
@@ -16,6 +16,7 @@ def record_absence():
         class_id = request.form['class_id']
         student_name = request.form['student_name']
         reason = request.form['reason']
+        absence_type = request.form['absence_type']
         start_time_str = request.form.get('start_time')
         end_time_str = request.form.get('end_time')
         comment = request.form['comment']
@@ -41,9 +42,9 @@ def record_absence():
             flash('Invalid email format.', 'error')
             return redirect(url_for('record_absence'))
 
-        # Validate reason
-        if reason not in valid_reasons:
-            flash('Invalid reason for absence.', 'error')
+        # Validate type
+        if absence_type not in valid_types:
+            flash('Invalid type of absence.', 'error')
             return redirect(url_for('record_absence'))
 
         # Additional validation based on reason
@@ -57,8 +58,9 @@ def record_absence():
             flash('Both leaving and return times are required for "Absent for a Time".', 'error')
             return redirect(url_for('record_absence'))
 
-        absence = Absence(student_name=student_name, reason=reason, class_id=class_id, date=absence_date,
-                          start_time=start_time, end_time=end_time, parent_email=parent_email, comment=comment)
+        absence = Absence(student_name=student_name, reason=reason, absence_type=absence_type,
+                  class_id=class_id, date=absence_date, start_time=start_time, end_time=end_time,
+                  parent_email=parent_email, comment=comment)
         db.session.add(absence)
         db.session.commit()
 

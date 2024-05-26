@@ -39,6 +39,7 @@ class Absence(db.Model):
     parent_email = db.Column(db.String(128))
     student_name = db.Column(db.String(64), index=True)
     reason = db.Column(db.String(256))
+    absence_type = db.Column(db.String(256))
     date = db.Column(db.Date)
     start_time = db.Column(db.Time, nullable=True)
     end_time = db.Column(db.Time, nullable=True)
