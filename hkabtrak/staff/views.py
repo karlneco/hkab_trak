@@ -42,7 +42,7 @@ def staff_login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        user = User.query.filter_by(email=username).first()
+        user = User.objects(email=username).first()
 
         if user and user.check_password(password):
             login_user(user)

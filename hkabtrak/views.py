@@ -1,16 +1,13 @@
-from hkabtrak import db
-from datetime import datetime, date
-from flask import Blueprint, render_template, request, redirect, url_for, flash, get_flashed_messages
-from hkabtrak.models import Class, load_user, User, Absence
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
+from flask import get_flashed_messages
 from flask import render_template, request, redirect, url_for, flash, Blueprint
+from hkabtrak import db
 from hkabtrak.models import Class, Absence
-
 
 valid_reasons = ['Absent', 'Late', 'Leaving Early', 'Absent for a Time', '欠席', '遅刻', '早退', '時間で欠席']
 
 root_bp = Blueprint('root', __name__, template_folder='templates')
+
 
 @root_bp.route('/', methods=['GET', 'POST'])
 def index():
@@ -69,7 +66,7 @@ def index():
     else:
         get_flashed_messages(with_categories=True)
 
-    classes = Class.query.all()
+    classes = Class.objects.all()
     today = datetime.today().strftime('%Y-%m-%d')
     return render_template('new_absence.html', classes=classes, today=today)
 

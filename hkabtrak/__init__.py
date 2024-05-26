@@ -1,11 +1,12 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 from flask_login import LoginManager
+from flask_mongoengine import MongoEngine
+from werkzeug.security import generate_password_hash
 
 # Config
-db = SQLAlchemy()
-migrate = Migrate()
+
+
+db = MongoEngine()
 login_manager = LoginManager()
 login_manager.login_view = 'staff.staff_login'
 login_manager.login_message = "Please log in to access the requested resource."
@@ -28,8 +29,16 @@ app.register_blueprint(semester_bp, url_prefix='/semester')
 
 # App Factory
 def create_app(cf=None):
+    import os
+    # os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    print("Current directory:", os.getcwd())
+
     print("config at: " + cf)
     app.config.from_pyfile(cf)
+
+    app.config["MONGODB_SETTINGS"] = [
+        {"db": "hoshuko_absence_tracker", "host": "localhost", "alias": "default"},
+    ]
 
     # Initialize models
     from hkabtrak import models
@@ -52,16 +61,15 @@ def register_commands(app):
         default_password = "admin123"
 
         # Check if the admin user already exists
-        existing_admin = User.query.filter_by(email=admin_email).first()
+        existing_admin = User.objects(email=admin_email)
         if not existing_admin:
             new_admin = User(
                 email=admin_email,
-                password=default_password,
+                password_hash=generate_password_hash(default_password),
                 name="Default Admin",
                 user_type="A"
             )
-            db.session.add(new_admin)
-            db.session.commit()
+            new_admin.save()
             print("Default admin user created")
         else:
             print("Admin user already exists")
@@ -70,7 +78,6 @@ def register_commands(app):
 # Initialize Extensions
 def initialize_extensions(app):
     db.init_app(app)
-    migrate.init_app(app, db)
     login_manager.init_app(app)
 
 

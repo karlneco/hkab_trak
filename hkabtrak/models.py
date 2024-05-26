@@ -4,67 +4,82 @@ from flask_login import UserMixin
 
 
 @login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(user_id)
-
-def load_course(class_id):
-    return Class.query.get(class_id)
+def load_user(email):
+    return User.objects(email=email).get_or_404()
 
 
-staff_class = db.Table(
-    "staff_class",
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('class_id', db.Integer, db.ForeignKey('class.id')),
+def load_course(name):
+    return Class.objects(name=name).get_or_404()
+
+
+USER_TYPES = (
+    ('A', 'Administrator'),
+    ('T', 'Teacher'),
+    ('H', 'Teacher Assistant'),
+    ('N', 'Not Assigned')
 )
 
-class Class(db.Model):
-    __tablename__ = 'class'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), index=True, unique=True)
-    instructions = db.Column(db.String(512), nullable=True)
-    day_start = db.Column(db.Time, nullable=True)
-    lunch_start = db.Column(db.Time, nullable=True)
-    lunch_end = db.Column(db.Time, nullable=True)
-    day_end = db.Column(db.Time, nullable=True)
-    staff = db.relationship('User', secondary=staff_class, back_populates='classes')
-    absences = db.relationship('Absence', back_populates='course')
+ABSENCE_TYPES = (
+    ('A', 'Absent'),
+    ('L', 'Late'),
+    ('E', 'Leave Early'),
+    ('T', 'Absent for a time')
+)
+
+
+class Class(db.Document):
+    name = db.StringField(required=True, unique=True)
+    instructions = db.StringField()
+    day_start = db.DateTimeField()
+    lunch_start = db.DateTimeField()
+    lunch_end = db.DateTimeField()
+    day_end = db.DateTimeField()
+    # Direct reference to User document IDs
+    teachers = db.ListField(db.ObjectIdField())
+    assistants = db.ListField(db.ObjectIdField())
 
     def __repr__(self):
         return f'<Class {self.name}>'
 
 
-class Absence(db.Model):
-    __tablename__ = 'absence'
-    id = db.Column(db.Integer, primary_key=True)
-    parent_email = db.Column(db.String(128))
-    student_name = db.Column(db.String(64), index=True)
-    reason = db.Column(db.String(256))
-    date = db.Column(db.Date)
-    start_time = db.Column(db.Time, nullable=True)
-    end_time = db.Column(db.Time, nullable=True)
-    comment = db.Column(db.String(512), nullable=True)
-    class_id = db.Column(db.Integer, db.ForeignKey('class.id'))
-    course = db.relationship('Class', back_populates='absences')
+class Absence(db.Document):
+    parent_email = db.StringField(required=True)
+    student_name = db.StringField(required=True)
+    reason = db.StringField()
+    type = db.StringField(required=True, choices=ABSENCE_TYPES)  # Updated to use choices
+    date = db.DateTimeField(required=True)
+    start_time = db.DateTimeField()
+    end_time = db.DateTimeField()
+    comment = db.StringField()
+    # Storing reference to Class
+    class_id = db.ObjectIdField(required=True)
+
+    meta = {
+        'indexes': [
+            # Indexing by date and type can be useful for quickly finding absences by when they occurred and what type they are.
+            {'fields': ['date', 'type']},
+            # Additional index if querying often by class_id might be sensible.
+            {'fields': ['class_id']}
+        ]
+    }
 
     def __repr__(self):
-        return f'<Absence {self.student_name} {self.date}>'
+        return f'<Absence {self.student_name} {self.date} {self.type}>'
 
 
-class User(db.Model, UserMixin):
-    __tablename__ = 'user'
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(64), unique=True, index=True)
-    name = db.Column(db.String(64))
-    password_hash = db.Column(db.String(128))
-    is_active = db.Column(db.Boolean, default=True)
-    user_type = db.Column(db.String(1), default="N")
-    classes = db.relationship('Class', secondary=staff_class, back_populates='staff')
-
-    def __init__(self, email, password, name, user_type):
-        self.email = email
-        self.password_hash = generate_password_hash(password)
-        self.name = name
-        self.user_type = user_type
+class User(db.Document, UserMixin):
+    email = db.StringField(required=True, unique=True)
+    name = db.StringField()
+    password_hash = db.StringField()
+    is_active = db.BooleanField(default=True)
+    user_type = db.StringField(default='N', choices=USER_TYPES)
+    # In MongoDB, you can store related object IDs directly or embed documents
+    classes = db.ListField(db.ObjectIdField())
+    meta = {
+        'indexes': [
+            {'fields': ['email'], 'unique': True}
+        ]
+    }
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
@@ -73,13 +88,10 @@ class User(db.Model, UserMixin):
         return self.email
 
 
-class Semester(db.Model):
-    __tablename__ = 'semesters'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True)
-    start_date = db.Column(db.Date, nullable=False)
-    end_date = db.Column(db.Date, nullable=False)
+class Semester(db.Document):
+    name = db.StringField(required=True)
+    start_date = db.DateTimeField()
+    end_date = db.DateTimeField()
 
     def __repr__(self):
         return f'<Semester {self.name} from {self.start_date} to {self.end_date}>'
