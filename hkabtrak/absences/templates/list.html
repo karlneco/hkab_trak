@@ -7,7 +7,11 @@
 </script>
 <div class="container mt-3">
     <div class="d-flex justify-content-between align-items-center mb-3">
+        {%  if selected_date %}
+        <h1 id="pageTitle">Absences for {{ selected_date }}</h1>
+        {% else %}
         <h1 id="pageTitle">Absences Overview</h1>
+        {% endif %}
         <div>
             <a href="{{ url_for('absences.students') }}" class="btn btn-primary">Student Absences</a>
             <a href="{{ url_for('staff.staff_logout') }}" class="btn btn-danger">Logout</a>
@@ -21,7 +25,9 @@
                     <button type="button" class="btn btn-secondary"
                             onclick="filterAbsences('{{ class.id }}', 'Absences for {{ class.name }}')">{{ class.name }}</button>
                 {% endfor %}
+                {%  if not selected_date %}
                 <button type="button" class="btn btn-info" id="modeButton" onclick="showNonCurrentAbsences()">Show Past and Future Absences</button>
+                {% endif %}
             </div>
         </div>
 
@@ -63,14 +69,19 @@
                     </tr> <!-- Draw line for week boundary -->
                 {% endif %}
 
+                {%  if not selected_date %}
                 <tr {% if absence.date > this_saturday %}style="color: lightgrey; display: none;"{% elif absence.date < this_saturday %}
                     style="color: gray; display: none;"{% endif %} class="absence-entry" data-class-id="{{ absence.class_id }}"
                     data-current="{% if absence.date != this_saturday %}false{% else %}true{% endif %}">
+                {% else %}
+                    <tr class="absence-entry" data-class-id="{{ absence.class_id }}"
+                    data-current="true">
+                {% endif %}
                     <td>{{ absence.student_name }}</td>
                     <td>{{ absence.reason }}</td>
                     <td>{{ absence.date.strftime('%Y-%m-%d') }}</td>
-                    <td>{{ absence.start_time.strftime('%H:%M') if absence.start_time else 'N/A' }}</td>
-                    <td>{{ absence.end_time.strftime('%H:%M') if absence.end_time else 'N/A' }}</td>
+                    <td>{{ absence.start_time.strftime('%H:%M') if absence.start_time else ' ' }}</td>
+                    <td>{{ absence.end_time.strftime('%H:%M') if absence.end_time else ' ' }}</td>
                     <td>{{ absence.parent_email }}</td>
                     <td style="white-space: pre-wrap;"> {{ absence.comment }}</td>
                     <td>{{ absence.course.name }}</td>
@@ -79,12 +90,6 @@
             {% endfor %}
             </tbody>
         </table>
-    </div>
-    <div class="float-right">
-        <a href="{{ url_for('staff.staff_logout') }}" class="btn btn-danger">Logout</a>
-    </div>
-    <div>
-        <a href="{{ url_for('absences.students') }}" class="btn btn-primary">Student Absences</a>
     </div>
 </div>
 

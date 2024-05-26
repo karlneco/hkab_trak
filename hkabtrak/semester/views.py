@@ -1,13 +1,12 @@
-from datetime import date, timedelta, datetime
 import random
+from datetime import timedelta, datetime
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, get_flashed_messages
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_required
 from sqlalchemy.exc import IntegrityError
 
-from hkabtrak.models import Class, load_user, User, Absence, Semester
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
 from hkabtrak import db
+from hkabtrak.models import Class, Absence, Semester
 
 semester_bp = Blueprint('semester', __name__, template_folder='templates')
 
@@ -152,7 +151,7 @@ def generate_and_add_absence(student_name, class_id, absence_date):
         start_time = datetime.strptime(f"9:00", '%H:%M').time()
         end_time = datetime.strptime(f"12:00", '%H:%M').time()
 
-    parent_email = f"{student_name.lower().replace(' ', '')}@example.com",
+    parent_email = f"{student_name.lower().replace(' ', '')}@example.com"
 
     # Creating and adding the absence record
     absence = Absence(
