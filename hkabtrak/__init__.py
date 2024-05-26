@@ -30,7 +30,6 @@ app.register_blueprint(semester_bp, url_prefix='/semester')
 # App Factory
 def create_app(cf=None):
     import os
-    # os.chdir(os.path.dirname(os.path.abspath(__file__)))
     print("Current directory:", os.getcwd())
 
     print("config at: " + cf)
