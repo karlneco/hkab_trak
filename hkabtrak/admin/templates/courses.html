@@ -15,7 +15,7 @@
       </thead>
       <tbody>
         {% for course in courses %}
-          <tr data-course-id="{{ course.id }}" class="course-row">
+          <tr data-course-id="{{ course.name }}" class="course-row">
             <td>{{ course.name }}</td>
             <td>{{ course.day_start.strftime('%H:%M') }}</td>
             <td>{{ course.lunch_start.strftime('%H:%M') }}</td>
@@ -44,7 +44,7 @@
             $(".course-row").on("click", function () {
                 const classId = $(this).data('course-id');
                 if (classId) {
-                    window.location.href = "{{ url_for('course.edit', course_id=0) }}" + classId;
+                    window.location.href = "{{ url_for('course.edit', course_name='') }}" + classId;
                 }
             });
 

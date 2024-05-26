@@ -12,7 +12,7 @@
     </style>
     <div class="container mt-5">
         <h1>Edit Class</h1>
-        <form method="post" action="{{ url_for('course.edit', course_id=course.id) }}">
+        <form method="post" action="{{ url_for('course.edit', course_name=course.name) }}">
             <div class="mb-3">
                 <label for="name" class="form-label">Name</label>
                 <input type="text" class="form-control" id="name" name="name" value="{{ course.name }}">
@@ -22,11 +22,7 @@
                     <label class="form-label">Teacher(s):</label>
                     <ul class="list-group">
                         {% for teacher in teachers %}
-                            <li class="list-group-item staff-row" data-staff-id="{{ teacher.id }}">
-                                {{ teacher.name }}
-                            </li>
-                        {% else %}
-                            <li class="list-group-item">None assigned</li>
+                            <li>{{ teacher.name if teacher != 'Not assigned' else teacher }}</li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -34,11 +30,7 @@
                     <label class="form-label">Assistant(s):</label>
                     <ul class="list-group">
                         {% for assistant in assistants %}
-                            <li class="list-group-item staff-row" data-staff-id="{{ assistant.id }}">
-                                {{ assistant.name }}
-                            </li>
-                        {% else %}
-                            <li class="list-group-item">None assigned</li>
+                            <li>{{ assistant.name if assistant != 'Not assigned' else assistant }}</li>
                         {% endfor %}
                     </ul>
                 </div>

@@ -37,7 +37,7 @@ def staff_list():
     return render_template('staff_list.html', staff=staff, user_types=user_types)
 
 
-@admin_bp.route('/staff/edit/<int:staff_id>', methods=['GET', 'POST'])
+@admin_bp.route('/staff/edit/<string:staff_id>', methods=['GET', 'POST'])
 @login_required
 def staff_edit(staff_id):
     # Load the teacher data from the database based on user_id
@@ -67,7 +67,7 @@ def staff_edit(staff_id):
 @admin_bp.route('/courses')
 @login_required
 def course_list():
-    courses = Class.query.all()
+    courses = Class.objects.all()
     return render_template('courses.html', courses=courses)
 
 

@@ -4,12 +4,12 @@ from flask_login import UserMixin
 
 
 @login_manager.user_loader
-def load_user(email):
-    return User.objects(email=email).get_or_404()
-
+def load_user(user_id):
+    # Depending on how you handle user IDs, this might need to be adapted
+    return User.objects(pk=user_id).first()
 
 def load_course(name):
-    return Class.objects(name=name).get_or_404()
+    return Class.objects(name=name).first()
 
 
 USER_TYPES = (
