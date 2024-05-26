@@ -32,10 +32,15 @@
         </div>
 
         <!-- Date Selector -->
-        <div>
-            <div class="form-group">
+        <div class="form-row align-items-center">
+            <div class="col-auto">
                 <label for="filterDate" class="form-label">Select Date:</label>
-                <input type="date" class="form-control" id="filterDate" name="filterDate" onchange="filterByDate()">
+            </div>
+            <div class="col-auto">
+                <input type="date" class="form-control" id="filterDate" name="filterDate" value="{{ selected_date }}">
+            </div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-primary" onclick="filterByDate()">Apply</button>
             </div>
         </div>
     </div>
@@ -51,6 +56,7 @@
             <thead class="thead-dark">
             <tr>
                 <th>Name</th>
+                <th>Type</th>
                 <th>Reason</th>
                 <th>Date</th>
                 <th>Start Time</th>
@@ -78,6 +84,7 @@
                     data-current="true">
                 {% endif %}
                     <td>{{ absence.student_name }}</td>
+                    <td>{{ absence.absence_type }}</td>
                     <td>{{ absence.reason }}</td>
                     <td>{{ absence.date.strftime('%Y-%m-%d') }}</td>
                     <td>{{ absence.start_time.strftime('%H:%M') if absence.start_time else ' ' }}</td>
@@ -139,9 +146,14 @@
     }
 
     function filterByDate() {
-    const selectedDate = document.getElementById("filterDate").value;
-    window.location.href = `{{ url_for('absences.list') }}?filterDate=${selectedDate}`;
-}
+        const dateValue = document.getElementById('filterDate').value;
+        if (dateValue) {
+            const currentURL = window.location.href.split('?')[0];  // Remove any existing query parameters
+            window.location.href = `${currentURL}?filterDate=${dateValue}`;  // Redirect to the same route with the date as a query parameter
+        } else {
+            alert('Please select a date.');
+        }
+    }
 </script>
 
 {% endblock %}
