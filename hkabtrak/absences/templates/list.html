@@ -6,8 +6,13 @@
     var currentClass = 'all';
 </script>
 <div class="container mt-3">
-    <h1>Absences Overview</h1>
-    <div class="d-flex justify-content-between align-items-end">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 id="pageTitle">Absences Overview</h1>
+        <div>
+            <a href="{{ url_for('absences.students') }}" class="btn btn-primary">Student Absences</a>
+            <a href="{{ url_for('staff.staff_logout') }}" class="btn btn-danger">Logout</a>
+        </div>
+    </div>    <div class="d-flex justify-content-between align-items-end">
         <!-- Class Buttons for Filtering -->
         <div>
             <div class="btn-group mb-3" role="group" aria-label="Class Filters">
@@ -130,15 +135,7 @@
 
     function filterByDate() {
     const selectedDate = document.getElementById("filterDate").value;
-    const rows = document.querySelectorAll('.absence-entry');
-    rows.forEach(row => {
-        const absenceDate = row.cells[2].textContent; // Assuming the date is in the third column
-        if (absenceDate === selectedDate) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
-    });
+    window.location.href = `{{ url_for('absences.list') }}?filterDate=${selectedDate}`;
 }
 </script>
 

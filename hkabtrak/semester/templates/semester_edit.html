@@ -16,16 +16,34 @@
             <label for="end_date">End Date:</label>
             <input type="date" id="end_date" name="end_date" class="form-control" value="{{ semester.end_date }}" required>
         </div>
-        <button type="submit" class="btn btn-primary">Update Semester</button>
-        <button type="button" class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+        <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-primary">Update Semester</button>
+            <button type="button" class="btn btn-warning" onclick="populateRandomAbsences()">Populate Random Absences</button>
+
+            <div>
+                <button type="button" class="btn btn-danger" onclick="confirmDeleteSemester()">Delete Semester</button>
+                <button type="button" class="btn btn-warning" onclick="confirmDeleteData()">Delete Data and Semester</button>
+            </div>
+        </div>
     </form>
 
     <script>
-        function confirmDelete() {
+        function confirmDeleteSemester() {
             if (confirm('Are you sure you want to delete this semester?')) {
                 window.location.href = "{{ url_for('semester.delete', semester_id=semester.id) }}";
             }
         }
+
+        function confirmDeleteData() {
+            if (confirm('Are you sure you want to delete this semester and all related absence data?')) {
+                window.location.href = "{{ url_for('semester.delete_data', semester_id=semester.id) }}";
+            }
+        }
+
+        function populateRandomAbsences() {
+            window.location.href = "{{ url_for('semester.populate_absences', semester_id=semester.id) }}";
+        }
+
     </script>
 
     <!-- Bootstrap and jQuery scripts included as before -->
