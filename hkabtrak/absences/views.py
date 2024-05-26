@@ -129,17 +129,22 @@ def students():
     class_absences_summary = {}
     if selected_semester:
         for cls in classes:
-            student_hours = {}
+            student_absences = {}
             for absence in cls.absences:
                 if selected_semester.start_date <= absence.date <= selected_semester.end_date:
-                    duration = calculate_absence_duration(cls, absence)
-                    if absence.student_name in student_hours:
-                        student_hours[absence.student_name] += duration
-                    else:
-                        student_hours[absence.student_name] = duration
+                    if absence.student_name not in student_absences:
+                        student_absences[absence.student_name] = {'days': 0, 'hours': 0}
 
-            if student_hours:
-                class_absences_summary[(cls.name, cls.id)] = student_hours
+                    if absence.absence_type == 'Absent':
+                        if absence.student_name in student_absences:
+                            student_absences[absence.student_name]['days'] += 1
+                    else:
+                        duration = calculate_absence_duration(cls, absence)
+                        if absence.student_name in student_absences:
+                            student_absences[absence.student_name]['hours'] += duration
+
+            if student_absences:
+                class_absences_summary[(cls.name, cls.id)] = student_absences
 
     return render_template('by_student.html', class_absences=class_absences_summary, semesters=semesters,
                            selected_semester=selected_semester)
@@ -162,12 +167,17 @@ def student_absences(grade, student_name):
             Class.id == grade
         ).all()
 
+    days_missed = 0
     for absence in absences:
-        duration = calculate_absence_duration(absence.course, absence)
-        setattr(absence, 'duration', duration)
+        if absence.absence_type != 'Absent':
+            duration = calculate_absence_duration(absence.course, absence)
+            setattr(absence, 'duration', duration)
+        else:
+            days_missed += 1
 
     return render_template('single_student.html', absences=absences, semesters=semesters,
-                           selected_semester=selected_semester, student_name=student_name, grade=grade)
+                           selected_semester=selected_semester, student_name=student_name, grade=grade,
+                           days_missed=days_missed)
 
 def calculate_absence_duration(cls, absence):
     # Start and end times of the class and lunch
@@ -176,7 +186,7 @@ def calculate_absence_duration(cls, absence):
     lunch_start = datetime.combine(absence.date, cls.lunch_start)
     lunch_end = datetime.combine(absence.date, cls.lunch_end)
 
-    match absence.reason:
+    match absence.absence_type:
         case 'Absent':
             absence_start = class_start
             absence_end = class_end

@@ -22,14 +22,16 @@
         <thead>
             <tr>
                 <th>Student Name</th>
-                <th>Total Absence Time (hours)</th>
+                <th>Total days absent</th>
+                <th>Total hours missed</th>
             </tr>
         </thead>
         <tbody>
-            {% for student_name, hours in students.items() %}
+            {% for student_name, absence_info in students.items() %}
             <tr>
                 <td><a href="{{  url_for('absences.student_absences', grade=class_id, student_name=student_name) }}">{{ student_name }}</a></td>
-                <td>{{ "%.2f" | format(hours) }}</td>
+                <td>{{ "%.0f" | format(absence_info['days']) }}</td>
+                <td class="duration" data-hours="{{ absence_info['hours'] }}"></td>
             </tr>
             {% endfor %}
         </tbody>
@@ -37,6 +39,19 @@
     {% endfor %}
 </div>
 
+<script>
+function formatDuration(hours) {
+    const totalMinutes = Math.floor(hours * 60);
+    const hoursPart = Math.floor(totalMinutes / 60);
+    const minutesPart = totalMinutes % 60;
+    return `${hoursPart}h ${minutesPart}min`;
+}
+
+document.querySelectorAll('.duration').forEach(element => {
+    const hours = parseFloat(element.dataset.hours);
+    element.textContent = formatDuration(hours);
+});
+</script>
 
 
 {% endblock %}

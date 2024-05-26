@@ -17,10 +17,13 @@
         </div>
     </form>
 
+    <h5>Total days missed: {{ days_missed }}</h5>
+
     <table class="table">
         <thead>
             <tr>
                 <th>Date</th>
+                <th>Type</th>
                 <th>Reason</th>
                 <th>Missed (hours)</th>
                 <th>Comment</th>
@@ -30,8 +33,9 @@
             {% for absence in absences %}
             <tr>
                 <td>{{ absence.date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ absence.absence_type }}</td>
                 <td>{{ absence.reason }}</td>
-                <td>{{ absence.duration }}</td>
+                <td class="duration" data-hours="{{ absence.duration }}"></td>
                 <td>{{ absence.comment }}</td>
             </tr>
             {% endfor %}
@@ -39,4 +43,19 @@
     </table>
 </div>
 
+<script>
+function formatDuration(hours) {
+    if (hours) {
+        const totalMinutes = Math.floor(hours * 60);
+        const hoursPart = Math.floor(totalMinutes / 60);
+        const minutesPart = totalMinutes % 60;
+        return `${hoursPart}h ${minutesPart}min`;
+    }
+}
+
+document.querySelectorAll('.duration').forEach(element => {
+    const hours = parseFloat(element.dataset.hours);
+    element.textContent = formatDuration(hours);
+});
+</script>
 {% endblock %}
