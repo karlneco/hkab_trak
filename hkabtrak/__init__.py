@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -30,6 +32,14 @@ app.register_blueprint(semester_bp, url_prefix='/semester')
 def create_app(cf=None):
     print("config at: " + cf)
     app.config.from_pyfile(cf)
+
+    # Override the SECRET_KEY with the value from the environment variable
+    secret_key = os.getenv('SECRET_KEY')
+
+    if not secret_key:
+        raise RuntimeError('SECRET_KEY environment variable is not set. The application cannot start without it.')
+
+    app.config['SECRET_KEY'] = secret_key
 
     # Initialize models
     from hkabtrak import models

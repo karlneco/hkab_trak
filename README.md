@@ -12,9 +12,6 @@ import os
 
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
 
-SECRET_KEY = 'your_awesome_password'
-DEBUG = True
-
 SQLALCHEMY_DATABASE_URI='sqlite:///' + os.path.join(BASEDIR,'data.sqlite')
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 
@@ -34,3 +31,5 @@ create the SQLite file with:
 If you upgrade the model, update the db with:
 `flask db upgrade`
 
+Make sure to set `SECRET_KEY` environment variable before starting the app, or as 
+part of the docker startup, otherwise the app will complain and die at startup.
