@@ -6,18 +6,18 @@ set -e
 # Set Flask app environment variable
 export FLASK_APP=main.py
 
+# Initialize database migrations if the migrations folder does not exist
+if [ ! -d "migrations" ]; then
+    echo "Initializing database migrations..."
+    flask db init
+fi
+
 # Function to run database migrations
 migrate_db() {
     echo "Running database migrations..."
     flask db migrate -m "initial db" || echo "Skipping migration creation; it might already exist."
     flask db upgrade
 }
-
-# Initialize database migrations if the migrations folder does not exist
-if [ ! -d "migrations" ]; then
-    echo "Initializing database migrations..."
-    flask db init
-fi
 
 # Run migrations
 migrate_db
