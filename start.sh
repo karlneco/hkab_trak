@@ -4,4 +4,6 @@ docker build -t ${app} .
 docker run -p 1473:1473 \
   --name=${app} \
   --env-file ~/hkab_trak.env \
-  -v $PWD/instance:/app/instance ${app}
+  -v hkabtrak_migrations:/app/migrations \
+  -v $PWD/instance:/app/instance \
+  -v $PWD:/app ${app}
