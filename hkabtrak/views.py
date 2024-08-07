@@ -1,6 +1,8 @@
 from hkabtrak import db
 from datetime import datetime, date
 from flask import Blueprint, render_template, request, redirect, url_for, flash, get_flashed_messages
+
+from hkabtrak.absence_form import AbsenceForm
 from hkabtrak.models import Class, load_user, User, Absence
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -16,9 +18,12 @@ root_bp = Blueprint('root', __name__, template_folder='templates')
 
 @root_bp.route('/', methods=['GET', 'POST'])
 def index():
+    form = AbsenceForm()
+    form.class_id.choices = [(cls.id, cls.name) for cls in Class.query.all()]
+
     classes = Class.query.all()
     today = datetime.today().strftime('%Y-%m-%d')
-    return render_template('new_absence.html', classes=classes, today=today)
+    return render_template('new_absence.html', form=form, today=today)
 
 
 @root_bp.route('/thank_you')

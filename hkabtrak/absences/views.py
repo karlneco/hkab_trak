@@ -1,5 +1,7 @@
 from datetime import datetime, date, timedelta
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, get_flashed_messages
+
+from hkabtrak.absence_form import AbsenceForm
 from hkabtrak.models import Absence, Class, load_user, User, Semester
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from hkabtrak import db, absences
@@ -13,81 +15,44 @@ valid_types = ['Absent', 'Late', 'Leaving Early', 'Absent for a Time', '欠席',
 
 @absences_bp.route('/record_absence', methods=['GET', 'POST'])
 def record_absence():
-    if request.method == 'POST':
-        parent_email = request.form['parent_email']
-        class_id = request.form['class_id']
-        student_name = request.form['student_name']
-        reason = request.form['reason']
-        absence_type = request.form['absence_type']
-        start_time_str = request.form.get('start_time')
-        end_time_str = request.form.get('end_time')
-        comment = request.form['comment']
+    form = AbsenceForm()
+    form.class_id.choices = [(cls.id, cls.name) for cls in Class.query.all()]
 
-        date_str = request.form.get('date')
-        try:
-            absence_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-            start_time = datetime.strptime(start_time_str, '%H:%M').time() if start_time_str else None
-            end_time = datetime.strptime(end_time_str, '%H:%M').time() if end_time_str else None
-            print("Parsed date:", absence_date)  # Debugging line
-        except ValueError:
-            flash('Invalid date and/or time format.', 'error')
-            return redirect(url_for('record_absence'))
+    if form.validate_on_submit():
+        parent_email = form.parent_email.data
+        class_id = form.class_id.data
+        student_name = form.student_name.data
+        reason = form.reason.data
+        start_time = form.start_time.data
+        end_time = form.end_time.data
+        comment = form.comment.data
+        date = form.date.data
 
-        # Validate date is not in the past
-        # today = date.today()
-        # if absence_date < today:
-        #     flash('The date cannot be in the past.', 'error')
-        #     return redirect(url_for('record_absence'))
-
-        # Validate email format (simple check)
-        if '@' not in parent_email or '.' not in parent_email.split('@')[-1]:
-            flash('Invalid email format.', 'error')
-            return redirect(url_for('record_absence'))
-
-        # Validate type
-        if absence_type not in valid_types:
-            flash('Invalid type of absence.', 'error')
-            return redirect(url_for('record_absence'))
-
-        # Additional validation based on reason
-        if absence_type == "Late" and not start_time:
-            flash('Expected time is required for "Late".', 'error')
-            return redirect(url_for('record_absence'))
-        if absence_type == "Leaving Early" and not end_time:
-            flash('Leaving time is required for "Leaving Early".', 'error')
-            return redirect(url_for('record_absence'))
-        if absence_type == "Absent for a Time" and (not start_time or not end_time):
-            flash('Both leaving and return times are required for "Absent for a Time".', 'error')
-            return redirect(url_for('record_absence'))
-
-        reason = request.form['reason']
-        if reason == "Other":
-            other_reason = request.form.get('otherReason', '').strip()
-            if not other_reason:
-                flash('Please specify the reason for "Other".', 'error')
-                return redirect(url_for('record_absence'))
-            reason = f"Other: {other_reason}"  # Append the specific reason to 'Other'
-
-        absence = Absence(student_name=student_name, reason=reason, absence_type=absence_type,
-                  class_id=class_id, date=absence_date, start_time=start_time, end_time=end_time,
-                  parent_email=parent_email, comment=comment)
+        absence = Absence(
+            student_name=student_name,
+            reason=reason,
+            class_id=class_id,
+            date=date,
+            start_time=start_time,
+            end_time=end_time,
+            parent_email=parent_email,
+            comment=comment
+        )
         db.session.add(absence)
         db.session.commit()
 
-        # Fetch the class and associated staff
         cls = Class.query.get(class_id)
         if cls:
             staff_emails = [user.email for user in cls.staff]
+            send_absence_notification(parent_email, staff_emails, student_name, reason, date, start_time, end_time, comment)
 
-            # Send email notifications
-            send_absence_notification(parent_email, staff_emails, student_name, reason, absence_date, start_time, end_time, comment)
+        return redirect(url_for('root.thank_you'))
+    else:
+        get_flashed_messages(with_categories=True)
 
-
-        return redirect(url_for('absences.thank_you'))
-
-    classes = Class.query.all()
     today = datetime.today().strftime('%Y-%m-%d')
-    return render_template('new_absence.html', classes=classes, today=today)
+    return render_template('new_absence.html', form=form, today=today)
+
 
 
 @absences_bp.route('/thank_you')

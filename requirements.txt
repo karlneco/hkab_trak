@@ -8,4 +8,5 @@ flask_migrate
 flask_login
 Flask-Testing
 Flask-Mail
+Flask-WTF
 gunicorn==20.1.0
