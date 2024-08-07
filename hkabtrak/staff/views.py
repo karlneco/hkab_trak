@@ -5,6 +5,7 @@ from hkabtrak.models import Class, load_user, User, Absence
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from hkabtrak import db
+from hkabtrak.util import send_email
 
 staff_bp = Blueprint('staff', __name__, template_folder='templates')
 
@@ -86,6 +87,14 @@ def profile():
             current_user.password_hash = generate_password_hash(new_password)
             db.session.commit()
             flash('Your password has been updated!', 'success')
+
+            # Send email notification
+            send_email(
+                subject="Your Password Has Been Changed",
+                recipients=[current_user.email],
+                body="Hello, your password has been successfully updated. If you did not make this change, please contact support immediately.",
+                html_body=render_template('password_changed.html')
+            )
             return redirect(url_for('staff.profile'))
 
     return render_template('profile.html')

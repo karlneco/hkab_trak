@@ -3,11 +3,13 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
+from flask_mail import Mail
 
 # Define global instances of extensions
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
+mail = Mail()
 
 def create_app(config_filename=None):
     # Create a new Flask app instance
@@ -32,6 +34,7 @@ def create_app(config_filename=None):
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    mail.init_app(app)
 
     # Set up login manager settings
     login_manager.login_view = 'staff.staff_login'
