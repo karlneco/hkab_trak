@@ -7,10 +7,7 @@ set -e
 export FLASK_APP=main.py
 
 # Initialize database migrations if the migrations folder does not exist
-if [ ! -d "migrations" ]; then
-    echo "Initializing database migrations..."
-    flask db init
-fi
+flask db init || true
 
 # Function to run database migrations
 migrate_db() {
