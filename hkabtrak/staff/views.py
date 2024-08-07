@@ -47,12 +47,10 @@ def staff_login():
         if user and user.check_password(password):
             login_user(user)
             current_user.type = user.user_type
-            flash('Login Successful')
+            flash('Login Successful', category='success')
             if user.user_type == 'A':
                 return redirect(url_for('admin.admin_main'))
 
-            # Retrieve and clear all flashed messages
-            get_flashed_messages(with_categories=True)
             return redirect(url_for('absences.list'))
         else:
             flash('Invalid credentials. Please try again.', 'danger')
@@ -69,6 +67,28 @@ def staff_login():
 def staff_list():
     staff = User.query.all()
     return render_template('staff_list.html', staff=staff)
+
+
+@staff_bp.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    if request.method == 'POST':
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+
+        if not current_user.check_password(current_password):
+            flash('Current password is incorrect.', 'danger')
+        elif new_password != confirm_password:
+            flash('New passwords do not match.', 'danger')
+        else:
+            # Update the user's password
+            current_user.password_hash = generate_password_hash(new_password)
+            db.session.commit()
+            flash('Your password has been updated!', 'success')
+            return redirect(url_for('staff.profile'))
+
+    return render_template('profile.html')
 
 
 @staff_bp.route('/set_staff_inactive/<int:staff_id>')

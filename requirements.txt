@@ -6,4 +6,6 @@ alembic
 flask_sqlalchemy
 flask_migrate
 flask_login
-gunicorn==20.1.0 
+Flask-Testing
+Flask-Mail
+gunicorn==20.1.0
