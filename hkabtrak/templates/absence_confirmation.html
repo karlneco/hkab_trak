@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Absence Notification</title>
+    <style>
+        /* General styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .email-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+        }
+        .footer {
+            font-size: 12px;
+            color: #6c757d;
+            text-align: center;
+            padding: 10px;
+            border-top: 1px solid #e9ecef;
+            background-color: #f8f9fa;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .table th,
+        .table td {
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            text-align: left;
+        }
+        .table th {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h2>Student Absence Confirmation</h2>
+        </div>
+        <div class="content">
+            <p>Dear Staff,</p>
+            <p>Please be informed that <strong>{{ student_name }}</strong> will be <strong>{{ reason.lower() }}</strong> on <strong>{{ date }}</strong>.</p>
+            <table class="table">
+                <tr>
+                    <th>Start Time</th>
+                    <td>{% if start_time %}{{ start_time.strftime('%H:%M') }}{% else %}N/A{% endif %}</td>
+                </tr>
+                <tr>
+                    <th>End Time</th>
+                    <td>{% if end_time %}{{ end_time.strftime('%H:%M') }}{% else %}N/A{% endif %}</td>
+                </tr>
+                <tr>
+                    <th>Comment</th>
+                    <td>{{ comment }}</td>
+                </tr>
+            </table>
+            <p>Thank you for your attention.</p>
+            <p>Best regards,</p>
+            <p>The Absence Tracker System</p>
+        </div>
+        <div class="footer">
+            <p>If you have any questions, please contact our support team.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -64,7 +64,6 @@ def staff_login():
 
 @staff_bp.route('/staff_list')
 @login_required
-@login_required
 def staff_list():
     staff = User.query.all()
     return render_template('staff_list.html', staff=staff)

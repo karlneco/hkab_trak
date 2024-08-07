@@ -3,6 +3,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from hkabtrak.models import Absence, Class, load_user, User, Semester
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from hkabtrak import db, absences
+from flask_mail import Message
+from hkabtrak import mail
 
 absences_bp = Blueprint('absences', __name__, template_folder='templates')
 
@@ -71,6 +73,15 @@ def record_absence():
                   parent_email=parent_email, comment=comment)
         db.session.add(absence)
         db.session.commit()
+
+        # Fetch the class and associated staff
+        cls = Class.query.get(class_id)
+        if cls:
+            staff_emails = [user.email for user in cls.staff]
+
+            # Send email notifications
+            send_absence_notification(parent_email, staff_emails, student_name, reason, absence_date, start_time, end_time, comment)
+
 
         return redirect(url_for('absences.thank_you'))
 
@@ -232,3 +243,33 @@ def calculate_absence_duration(cls, absence):
 
     return duration.total_seconds() / 3600  # Convert duration to hours
 
+
+def send_absence_notification(parent_email, recipients, student_name, reason, absence_date, start_time, end_time, comment):
+    """
+    Send email notifications to the specified recipients about the student's absence.
+    """
+    subject = "Student Absence Notification"
+    body = render_template(
+        'absence_notification.html',
+        student_name=student_name,
+        reason=reason,
+        date=absence_date,
+        start_time=start_time,
+        end_time=end_time,
+        comment=comment
+    )
+    msg = Message(subject, recipients=recipients, html=body)
+    mail.send(msg)
+
+    subject = "Student Absence Confirmation"
+    body = render_template(
+        'absence_confirmation.html',
+        student_name=student_name,
+        reason=reason,
+        date=absence_date,
+        start_time=start_time,
+        end_time=end_time,
+        comment=comment
+    )
+    msg = Message(subject, recipients=[parent_email], html=body)
+    mail.send(msg)
