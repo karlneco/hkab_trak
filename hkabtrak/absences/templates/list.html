@@ -18,7 +18,6 @@
         </div>
     </div>    <div class="d-flex justify-content-between align-items-end">
         <!-- Class Buttons for Filtering -->
-        <div>
             <div class="btn-group mb-3" role="group" aria-label="Class Filters">
                 <button type="button" class="btn btn-secondary" onclick="filterAbsences('all', 'Absences for all your Classes')">All Classes</button>
                 {% for class in classes %}
@@ -29,10 +28,9 @@
                 <button type="button" class="btn btn-info" id="modeButton" onclick="showNonCurrentAbsences()">Show Past and Future Absences</button>
                 {% endif %}
             </div>
-        </div>
 
         <!-- Date Selector -->
-        <div class="form-row align-items-center">
+        <div class="form-row align-items-center mb-3">
             <div class="col-auto">
                 <label for="filterDate" class="form-label">Select Date:</label>
             </div>
