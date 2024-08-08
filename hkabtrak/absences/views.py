@@ -124,6 +124,8 @@ def students():
     semesters = Semester.query.order_by(Semester.start_date.desc()).all()  # Order by start date descending
     selected_semester_id = request.args.get('semester_id', type=int)
 
+    selected_semester = None
+
     if selected_semester_id:
         selected_semester = Semester.query.get(selected_semester_id)
     else:
