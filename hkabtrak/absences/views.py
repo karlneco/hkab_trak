@@ -67,6 +67,7 @@ def record_absence():
             staff_emails = [user.email for user in cls.staff]
             send_absence_notification(parent_email, staff_emails, student_name, reason, date, start_time, end_time, comment)
 
+        get_flashed_messages(with_categories=True)
         return redirect(url_for('root.thank_you'))
     else:
         get_flashed_messages(with_categories=True)
