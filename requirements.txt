@@ -3,6 +3,7 @@ werkzeug
 sqlalchemy
 boto3
 alembic
+email_validator
 flask_sqlalchemy
 flask_migrate
 flask_login
