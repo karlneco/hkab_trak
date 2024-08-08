@@ -19,7 +19,8 @@ root_bp = Blueprint('root', __name__, template_folder='templates')
 @root_bp.route('/', methods=['GET', 'POST'])
 def index():
     form = AbsenceForm()
-    form.class_id.choices = [(cls.id, cls.name) for cls in Class.query.all()]
+    default_course_choice = [('', '学年を選択してください')]
+    form.class_id.choices = default_course_choice + [(cls.id, cls.name) for cls in Class.query.all()]
 
     classes = Class.query.all()
     today = datetime.today().strftime('%Y-%m-%d')

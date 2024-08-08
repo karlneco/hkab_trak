@@ -17,7 +17,8 @@ valid_types = ['欠席', '遅刻', '早退', '中抜け']
 @absences_bp.route('/record_absence', methods=['GET', 'POST'])
 def record_absence():
     form = AbsenceForm()
-    form.class_id.choices = [(cls.id, cls.name) for cls in Class.query.all()]
+    default_course_choice = [('', '学年を選択してください')]
+    form.class_id.choices = default_course_choice + [(cls.id, cls.name) for cls in Class.query.all()]
 
     if request.method == 'POST':
         reason = form.reason.data
