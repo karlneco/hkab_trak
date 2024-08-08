@@ -49,6 +49,9 @@ def record_absence():
         comment = form.comment.data
         date = form.date.data
 
+        if reason == 'その他':
+            reason = 'その他' + ': ' + form.other_reason.data
+
         absence = Absence(
             student_name=student_name,
             reason=reason,
@@ -66,7 +69,8 @@ def record_absence():
         cls = Class.query.get(class_id)
         if cls:
             staff_emails = [user.email for user in cls.staff]
-            send_absence_notification(parent_email, staff_emails, student_name, reason, date, start_time, end_time, comment)
+            send_absence_notification(parent_email, staff_emails, student_name, absence_type, reason, date, start_time, end_time,
+                                      comment)
 
         get_flashed_messages(with_categories=True)
         return redirect(url_for('root.thank_you'))
@@ -75,7 +79,6 @@ def record_absence():
 
     today = datetime.today().strftime('%Y-%m-%d')
     return render_template('new_absence.html', form=form, today=today)
-
 
 
 @absences_bp.route('/thank_you')
@@ -112,7 +115,8 @@ def list():
     all_absences_sorted = sorted(all_absences, key=lambda x: x.date, reverse=True)
     this_saturday = date.today() + timedelta((5 - date.today().weekday()) % 7)
 
-    return render_template('list.html', absences=all_absences_sorted, classes=classes, this_saturday=this_saturday, selected_date=selected_date)
+    return render_template('list.html', absences=all_absences_sorted, classes=classes, this_saturday=this_saturday,
+                           selected_date=selected_date)
 
 
 @absences_bp.route('/students')
@@ -193,6 +197,7 @@ def student_absences(grade, student_name):
                            selected_semester=selected_semester, student_name=student_name, grade=grade,
                            days_missed=days_missed)
 
+
 def calculate_absence_duration(cls, absence):
     # Start and end times of the class and lunch
     class_start = datetime.combine(absence.date, cls.day_start)
@@ -234,7 +239,8 @@ def calculate_absence_duration(cls, absence):
     return duration.total_seconds() / 3600  # Convert duration to hours
 
 
-def send_absence_notification(parent_email, recipients, student_name, reason, absence_date, start_time, end_time, comment):
+def send_absence_notification(parent_email, recipients, student_name, absence_type, reason, absence_date, start_time, end_time,
+                              comment):
     """
     Send email notifications to the specified recipients about the student's absence.
     """
@@ -243,6 +249,7 @@ def send_absence_notification(parent_email, recipients, student_name, reason, ab
         'absence_notification.html',
         student_name=student_name,
         reason=reason,
+        absence_type=absence_type,
         date=absence_date,
         start_time=start_time,
         end_time=end_time,
@@ -256,6 +263,7 @@ def send_absence_notification(parent_email, recipients, student_name, reason, ab
         'absence_confirmation.html',
         student_name=student_name,
         reason=reason,
+        absence_type=absence_type,
         date=absence_date,
         start_time=start_time,
         end_time=end_time,

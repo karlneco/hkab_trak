@@ -159,7 +159,7 @@
 
     function handleOtherReason() {
         var otherReasonInput = document.getElementById('otherReasonInput');
-        var otherChecked = document.getElementById('other_reason').checked;
+        var otherChecked = document.getElementById('other').checked;
         otherReasonInput.style.display = otherChecked ? 'block' : 'none';
         if (!otherChecked) {
             document.getElementById('otherReason').value = '';  // Clear the input if 'Other' is not selected
