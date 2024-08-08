@@ -22,22 +22,22 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item active">
-            <a class="nav-link" href="{{ url_for('absences.list') }}">Home <span class="sr-only">(current)</span></a>
+            <a class="nav-link" href="{{ url_for('absences.list') }}">ホーム<span class="sr-only">(current)</span></a>
           </li>
           {% if current_user.user_type=='A' %}
               <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('admin.staff_list') }}">Staff List</a>
+                <a class="nav-link" href="{{ url_for('admin.staff_list') }}">スタッフリスト</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('semester.semester_list') }}">Semesters</a>
+                <a class="nav-link" href="{{ url_for('semester.semester_list') }}">学期</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('admin.course_list') }}">Classes</a>
+                <a class="nav-link" href="{{ url_for('admin.course_list') }}">学年</a>
               </li>
           {% endif %}
 
         </ul>
-            <a class="nav-link" href="{{ url_for('staff.profile') }}">My Profile</a>
+            <a class="nav-link" href="{{ url_for('staff.profile') }}">プロフィール</a>
       </div>
     </nav>
     <br>

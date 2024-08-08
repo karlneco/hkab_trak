@@ -2,27 +2,29 @@
 
 {% block content %}
 <div class="container-sm">
-    <h1 class="mt-5">Edit Semester</h1>
+    <h1 class="mt-5">学期を編集する</h1>
     <form action="{{ url_for('semester.edit', semester_id=semester.id) }}" method="post" class="mt-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
         <div class="form-group">
-            <label for="name">Semester Name:</label>
+            <label for="name">学期名:</label>
             <input type="text" id="name" name="name" class="form-control" value="{{ semester.name }}" required>
         </div>
         <div class="form-group">
-            <label for="start_date">Start Date:</label>
+            <label for="start_date">開始日:</label>
             <input type="date" id="start_date" name="start_date" class="form-control" value="{{ semester.start_date }}" required>
         </div>
         <div class="form-group">
-            <label for="end_date">End Date:</label>
+            <label for="end_date">終了日:</label>
             <input type="date" id="end_date" name="end_date" class="form-control" value="{{ semester.end_date }}" required>
         </div>
         <div class="d-flex justify-content-between">
-            <button type="submit" class="btn btn-primary">Update Semester</button>
+            <button type="submit" class="btn btn-primary">保存</button>
             <button type="button" class="btn btn-warning" onclick="populateRandomAbsences()">Populate Random Absences</button>
 
             <div>
-                <button type="button" class="btn btn-danger" onclick="confirmDeleteSemester()">Delete Semester</button>
-                <button type="button" class="btn btn-warning" onclick="confirmDeleteData()">Delete Data and Semester</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDeleteSemester()">この学期を削除する</button>
+                <button type="button" class="btn btn-warning" onclick="confirmDeleteData()">この学期のデータを全て削除する</button>
             </div>
         </div>
     </form>

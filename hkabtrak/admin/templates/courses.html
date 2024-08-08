@@ -2,15 +2,15 @@
 
 {% block content %}
 <div class="container-sm">
-    <h1 class="mt-4">Class List</h1>
+    <h1 class="mt-4">学年リスト</h1>
     <table class="table mt-4">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Day Starts</th>
-          <th>Lunch Starts</th>
-          <th>Lunch Ends</th>
-          <th>Day Ends</th>
+          <th>学年</th>
+          <th>授業開始時間</th>
+          <th>昼食開始時間</th>
+          <th>昼食終了時間</th>
+          <th>授業終了時間</th>
         </tr>
       </thead>
       <tbody>
@@ -26,7 +26,7 @@
       </tbody>
     </table>
     <div class="mt-3">
-        <a class="btn btn-primary" href="{{ url_for('course.create') }}">Add a New Class</a>
+        <a class="btn btn-primary" href="{{ url_for('course.create') }}">新しいクラスを追加する</a>
     </div>
 </div>
     <!-- Bootstrap JS and jQuery scripts -->

@@ -1,20 +1,27 @@
 from flask_wtf import FlaskForm, RecaptchaField
-from wtforms import StringField, SelectField, DateField, TimeField, TextAreaField, RadioField
+from wtforms import StringField, SelectField, DateField, TimeField, TextAreaField, RadioField, validators
 from wtforms.validators import DataRequired, Email
 
 class AbsenceForm(FlaskForm):
-    parent_email = StringField('Parent\'s Email', validators=[DataRequired(), Email()])
+    parent_email = StringField('Email', validators=[DataRequired(), Email()])
     class_id = SelectField('Class', validators=[DataRequired()])
     student_name = StringField('Student Name', validators=[DataRequired()])
-    reason = RadioField('Reason for Absence', choices=[
-        ('Unwell', 'Unwell'),
-        ('Lessons', 'Lessons'),
-        ('Personal', 'Personal'),
-        ('Other', 'Other')
+    absence_type = SelectField('Type of Absence', choices=[
+        ('Select a Type', ''),
+        ('欠席', '欠席'),
+        ('遅刻', '遅刻'),
+        ('早退', '早退'),
+        ('中抜け', '中抜け')
     ], validators=[DataRequired()])
-    other_reason = StringField('Please specify', validators=[DataRequired()])
+    reason = SelectField('Reason for Absence', choices=[
+        ('体調不良', '体調不良'),
+        ('習い事', '習い事'),
+        ('私事都合', '私事都合'),
+        ('その他', 'その他')
+    ], validators=[DataRequired()])
+    other_reason = StringField('Please specify')
     date = DateField('Date', format='%Y-%m-%d', validators=[DataRequired()])
-    start_time = TimeField('Start Time')
-    end_time = TimeField('End Time')
+    start_time = TimeField('Start Time', validators=(validators.Optional(),))
+    end_time = TimeField('End Time', validators=(validators.Optional(),))
     comment = TextAreaField('Comment', validators=[DataRequired()])
     recaptcha = RecaptchaField()

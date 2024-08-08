@@ -2,13 +2,13 @@
 
 {% block content %}
 <div class="container-sm">
-    <h1 class="mt-4">Semester List</h1>
+    <h1 class="mt-4">学期</h1>
     <table class="table mt-4">
       <thead>
         <tr>
-          <th>Semester</th>
-          <th>Start Date</th>
-          <th>End Date</th>
+          <th>学期名</th>
+          <th>開始日</th>
+          <th>終了日</th>
         </tr>
       </thead>
       <tbody>
@@ -22,7 +22,7 @@
       </tbody>
     </table>
     <div class="mt-3">
-        <a class="btn btn-primary" href="{{ url_for('semester.create') }}">Add a New Semester</a>
+        <a class="btn btn-primary" href="{{ url_for('semester.create') }}">新しい学期を追加する</a>
     </div>
 </div>
     <!-- Bootstrap JS and jQuery scripts -->

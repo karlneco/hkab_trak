@@ -1,5 +1,6 @@
 from datetime import datetime, date, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, flash, get_flashed_messages
+from wtforms.validators import DataRequired
 
 from hkabtrak.absence_form import AbsenceForm
 from hkabtrak.models import Absence, Class, load_user, User, Semester
@@ -10,7 +11,7 @@ from hkabtrak import mail
 
 absences_bp = Blueprint('absences', __name__, template_folder='templates')
 
-valid_types = ['Absent', 'Late', 'Leaving Early', 'Absent for a Time', '欠席', '遅刻', '早退', '時間で欠席']
+valid_types = ['欠席', '遅刻', '早退', '中抜け']
 
 
 @absences_bp.route('/record_absence', methods=['GET', 'POST'])
@@ -18,10 +19,29 @@ def record_absence():
     form = AbsenceForm()
     form.class_id.choices = [(cls.id, cls.name) for cls in Class.query.all()]
 
-    if form.validate_on_submit():
+    if request.method == 'POST':
+        reason = form.reason.data
+        # Add conditional validators
+        if reason == '遅刻':
+            form.start_time.validators.append(DataRequired(message="Expected time is required for 'Late'."))
+        if reason == '早退':
+            form.end_time.validators.append(DataRequired(message="Leaving time is required for 'Leaving Early'."))
+        if reason == '中抜け':
+            form.start_time.validators.append(DataRequired(message="Leaving time is required for 'Absent for a Time'."))
+            form.end_time.validators.append(DataRequired(message="Return time is required for 'Absent for a Time'."))
+
+        form.validate()
+        if form.errors:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    flash(f"Error in {getattr(form, field).label.text}: {error}", 'danger')
+
+    captcha_response = request.form['g-recaptcha-response']
+    if len(captcha_response) > 0:
         parent_email = form.parent_email.data
         class_id = form.class_id.data
         student_name = form.student_name.data
+        absence_type = form.absence_type.data
         reason = form.reason.data
         start_time = form.start_time.data
         end_time = form.end_time.data
@@ -36,6 +56,7 @@ def record_absence():
             start_time=start_time,
             end_time=end_time,
             parent_email=parent_email,
+            absence_type=absence_type,
             comment=comment
         )
         db.session.add(absence)
