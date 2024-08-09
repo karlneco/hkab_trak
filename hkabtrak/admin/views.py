@@ -115,7 +115,7 @@ def get_all_classes():
     all_classes = [{'id': c.id, 'name': c.name} for c in classes]
     return jsonify({'classes': all_classes})
 
-@admin_bp.route('/api/add_class/<int:class_id>/<int:staff_id>', methods=['POST'])
+@admin_bp.route('/api/add_class/<int:class_id>/<int:staff_id>', methods=['GET'])
 @login_required
 def add_class(class_id, staff_id):
     staff = User.query.get(staff_id)
@@ -129,7 +129,7 @@ def add_class(class_id, staff_id):
         return jsonify({'error': 'Teacher or class not found'})
 
 # Route to remove a class from a teacher
-@admin_bp.route('/api/remove_class/<int:class_id>/<int:staff_id>', methods=['POST'])
+@admin_bp.route('/api/remove_class/<int:class_id>/<int:staff_id>', methods=['GET'])
 @login_required
 def remove_class(class_id, staff_id):
     staff = User.query.get(staff_id)

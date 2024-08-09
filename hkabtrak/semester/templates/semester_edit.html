@@ -20,7 +20,7 @@
         </div>
         <div class="d-flex justify-content-between">
             <button type="submit" class="btn btn-primary">保存</button>
-            <button type="button" class="btn btn-warning" onclick="populateRandomAbsences()">Populate Random Absences</button>
+{#            <button type="button" class="btn btn-warning" onclick="populateRandomAbsences()">Populate Random Absences</button>#}
 
             <div>
                 <button type="button" class="btn btn-danger" onclick="confirmDeleteSemester()">この学期を削除する</button>
@@ -42,9 +42,9 @@
             }
         }
 
-        function populateRandomAbsences() {
-            window.location.href = "{{ url_for('semester.populate_absences', semester_id=semester.id) }}";
-        }
+        {#function populateRandomAbsences() {#}
+        {#    window.location.href = "{{ url_for('semester.populate_absences', semester_id=semester.id) }}";#}
+        {#}#}
 
     </script>
 

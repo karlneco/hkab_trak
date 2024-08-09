@@ -87,6 +87,7 @@
         <hr/>
     <!-- Password Reset Form -->
     <form method="post" action="{{ url_for('admin.reset_password', staff_id=staff.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="mt-4">
         <h3>Password Reset</h3>
         <div class="form-group">
@@ -185,8 +186,8 @@
   // Function to add a class to the teacher
   function addToClass(classId) {
     $.ajax({
-      url: `/admin/api/add_class/${classId}/{{ staff.id }}`, // Replace with the correct URL for adding a aclass
-      method: 'POST',
+      url: `/admin/api/add_class/${classId}/{{ staff.id }}`, // Replace with the correct URL for adding a class
+      method: 'GET',
       success: function (data) {
         // Refresh the lists after successfully adding the aclass
         populateStaffClasses();
@@ -202,7 +203,7 @@
   function removeFromClass(classId) {
     $.ajax({
       url: `/admin/api/remove_class/${classId}/{{ staff.id }}`, // Replace with the correct URL for removing a aclass
-      method: 'POST',
+      method: 'GET',
       success: function (data) {
         // Refresh the lists after successfully removing the aclass
         populateStaffClasses();

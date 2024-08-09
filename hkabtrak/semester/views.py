@@ -14,7 +14,7 @@ semester_bp = Blueprint('semester', __name__, template_folder='templates')
 @semester_bp.route('/list', methods=['GET'])
 @login_required
 def semester_list():
-    semesters = Semester.query.order_by(Semester.start_date.desc()).all()
+    semesters = Semester.query.order_by(Semester.start_date.asc()).all()
     return render_template('semester_list.html', semesters=semesters)
 
 
