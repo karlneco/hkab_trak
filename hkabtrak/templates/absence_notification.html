@@ -57,31 +57,31 @@
 <body>
     <div class="email-container">
         <div class="header">
-            <h2>Student Absence Notification</h2>
+            <h2>欠席連絡受領のお知らせ</h2>
         </div>
         <div class="content">
-            <p>Dear Staff,</p>
-            <p>Please be informed that <strong>{{ student_name }}</strong> will be <strong>{{ absence_type.lower() }}</strong> on <strong>{{ date }}</strong> due to <strong>{{ reason }}</strong>.</p>
-            <table class="table">
-                <tr>
-                    <th>Start Time</th>
-                    <td>{% if start_time %}{{ start_time.strftime('%H:%M') }}{% else %}N/A{% endif %}</td>
-                </tr>
-                <tr>
-                    <th>End Time</th>
-                    <td>{% if end_time %}{{ end_time.strftime('%H:%M') }}{% else %}N/A{% endif %}</td>
-                </tr>
-                <tr>
-                    <th>Comment</th>
-                    <td>{{ comment }}</td>
-                </tr>
-            </table>
-            <p>Thank you for your attention.</p>
-            <p>Best regards,</p>
-            <p>The Absence Tracker System</p>
-        </div>
-        <div class="footer">
-            <p>If you have any questions, please contact our support team.</p>
+            <p>{{ student_name }}さん</p>
+            <p>授業欠席（遅刻・早退・中抜け）のご連絡をありがとうございます。</p>
+            <p>担任と事務局に以下の内容で送信されました。（担任の先生へ：宿題について確認をお願いします）</p>
+            <p>
+                報告の種類:　<strong>{{ absence_type }}</strong><br/>
+                日付:　<strong>{{ date }}</strong> <br/>
+                {% if absence_type == '遅刻' %}
+                    登校予定時刻: {% if start_time %}<strong>{{ start_time.strftime('%H:%M') }}</strong>{% endif %}
+                {% elif absence_type == '早退' %}
+                    早退予定時刻: {% if end_time %}<strong>{{ end_time.strftime('%H:%M') }}</strong>{% endif %}
+                {% elif absence_type == '中抜け' %}
+                    中抜け予定時刻: {% if start_time %}<strong>{{ start_time.strftime('%H:%M') }}</strong>{% endif %}<br/>
+                    学校に戻る予定時刻: {% if end_time %}<strong>{{ end_time.strftime('%H:%M') }}</strong>{% endif %}
+                {% endif %}
+                <br/>
+                理由:　<strong>{{ reason }}</strong> <br/>
+                ご希望をお書きください: <br/>
+                <pre>{{ comment }}</pre>
+            </p>
+
+            <hr/>
+            カルガリー補習授業校
         </div>
     </div>
 </body>

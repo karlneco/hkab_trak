@@ -2,6 +2,17 @@ from flask_wtf import FlaskForm, RecaptchaField
 from wtforms import StringField, SelectField, DateField, TimeField, TextAreaField, RadioField, validators
 from wtforms.validators import DataRequired, Email
 
+
+class CustomSelectField(SelectField):
+    def __init__(self, label=None, validators=None, coerce=str, option_kwargs=None, **kwargs):
+        super().__init__(label, validators, coerce=coerce, **kwargs)
+        self.option_kwargs = option_kwargs or {}
+
+    def iter_choices(self):
+        for value, label, kwargs in self.choices:
+            yield (value, label, self.coerce(value), self.option_kwargs.get(value, {}))
+
+
 class AbsenceForm(FlaskForm):
     parent_email = StringField('Email', validators=[DataRequired(), Email()])
     class_id = SelectField('Class', validators=[DataRequired()])

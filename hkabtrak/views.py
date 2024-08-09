@@ -20,7 +20,9 @@ root_bp = Blueprint('root', __name__, template_folder='templates')
 def index():
     form = AbsenceForm()
     default_course_choice = [('', '学年を選択してください')]
-    form.class_id.choices = default_course_choice + [(cls.id, cls.name) for cls in Class.query.all()]
+    form.class_id.choices = default_course_choice + [
+        (cls.id, cls.name, {'data-instructions': cls.instructions or 'None'}) for cls in Class.query.all()
+    ]
 
     classes = Class.query.all()
     today = datetime.today().strftime('%Y-%m-%d')
@@ -36,7 +38,7 @@ def send_absence_notification(recipients, student_name, reason, absence_date, st
     """
     Send email notifications to the specified recipients about the student's absence.
     """
-    subject = "Student Absence Notification"
+    subject = "nameさんの欠席連絡受領のお知らせ_2024_06_24"
     body = render_template(
         'email/absence_notification.html',
         student_name=student_name,

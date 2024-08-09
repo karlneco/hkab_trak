@@ -18,7 +18,9 @@ valid_types = ['欠席', '遅刻', '早退', '中抜け']
 def record_absence():
     form = AbsenceForm()
     default_course_choice = [('', '学年を選択してください')]
-    form.class_id.choices = default_course_choice + [(cls.id, cls.name) for cls in Class.query.all()]
+    form.class_id.choices = default_course_choice + [
+        (cls.id, cls.name, {'data-instructions': cls.instructions or 'None'}) for cls in Class.query.all()
+    ]
 
     if request.method == 'POST':
         reason = form.reason.data
@@ -127,7 +129,7 @@ def students():
     # Fetch all classes where the teacher is involved
     classes = Class.query.join(Class.staff).filter(User.id == current_user.id).all()
 
-    semesters = Semester.query.order_by(Semester.start_date.desc()).all()  # Order by start date descending
+    semesters = Semester.query.order_by(Semester.start_date.asc()).all()  # Order by start date descending
     selected_semester_id = request.args.get('semester_id', type=int)
 
     selected_semester = None
@@ -170,7 +172,7 @@ def students():
 
 @absences_bp.route('/student/<int:grade>/<student_name>/', methods=['GET', 'POST'])
 def student_absences(grade, student_name):
-    semesters = Semester.query.order_by(Semester.start_date.desc()).all()
+    semesters = Semester.query.order_by(Semester.start_date.asc()).all()
     selected_semester_id = request.args.get('semester_id', type=int)
 
     if selected_semester_id is None or selected_semester_id == -1:  # -1 for 'All Time'
@@ -244,7 +246,7 @@ def send_absence_notification(parent_email, recipients, student_name, absence_ty
     """
     Send email notifications to the specified recipients about the student's absence.
     """
-    subject = "Student Absence Notification"
+    subject = student_name + "さんの欠席連絡受領のお知らせ_" + absence_date.strftime('%Y-%m-%d')
     body = render_template(
         'absence_notification.html',
         student_name=student_name,
@@ -258,9 +260,9 @@ def send_absence_notification(parent_email, recipients, student_name, absence_ty
     msg = Message(subject, recipients=recipients, html=body)
     mail.send(msg)
 
-    subject = "Student Absence Confirmation"
+    subject = student_name + "さんの欠席連絡受領のお知らせ_" + absence_date.strftime('%Y-%m-%d')
     body = render_template(
-        'absence_confirmation.html',
+        'absence_notification.html',
         student_name=student_name,
         reason=reason,
         absence_type=absence_type,
