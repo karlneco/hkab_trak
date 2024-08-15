@@ -6,12 +6,14 @@ from sqlalchemy.exc import IntegrityError
 
 from hkabtrak import db
 from hkabtrak.models import Class, load_course
+from hkabtrak.util import admin_required
 
 courses_bp = Blueprint('course', __name__, template_folder='templates')
 
 
 @courses_bp.route('/create', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def create():
     if request.method == 'POST':
         name = request.form['name']
@@ -45,6 +47,7 @@ def create():
 
 @courses_bp.route('/edit/<int:course_id>', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def edit(course_id):
     course = Class.query.get_or_404(course_id)
     # Filter staff into teachers and assistants
@@ -80,6 +83,7 @@ def edit(course_id):
 
 @courses_bp.route('/duplicate/<int:course_id>', methods=['POST'])
 @login_required
+@admin_required
 def duplicate(course_id):
     original_course = Class.query.get_or_404(course_id)
     new_course = Class(
@@ -99,6 +103,7 @@ def duplicate(course_id):
 
 @courses_bp.route('/delete/<int:course_id>', methods=['GET'])
 @login_required
+@admin_required
 def delete(course_id):
     course = Class.query.get_or_404(course_id)
     db.session.delete(course)
@@ -109,6 +114,7 @@ def delete(course_id):
 
 @courses_bp.route('/course_view', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def course_view():
     course = load_course()
     return render_template('course_edit.html', course=course)
@@ -116,6 +122,7 @@ def course_view():
 
 @courses_bp.route('/course_list')
 @login_required
+@admin_required
 def course_list():
     classes = Class.query.all()
     return render_template(url_for('admin.course_list'))
