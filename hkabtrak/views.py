@@ -32,21 +32,3 @@ def index():
 @root_bp.route('/thank_you')
 def thank_you():
     return render_template('absence_submited.html')
-
-
-def send_absence_notification(recipients, student_name, reason, absence_date, start_time, end_time, comment):
-    """
-    Send email notifications to the specified recipients about the student's absence.
-    """
-    subject = "nameさんの欠席連絡受領のお知らせ_2024_06_24"
-    body = render_template(
-        'email/absence_notification.html',
-        student_name=student_name,
-        reason=reason,
-        date=absence_date,
-        start_time=start_time,
-        end_time=end_time,
-        comment=comment
-    )
-    msg = Message(subject, recipients=recipients, html=body)
-    mail.send(msg)
