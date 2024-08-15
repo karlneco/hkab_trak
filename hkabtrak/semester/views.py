@@ -7,12 +7,14 @@ from sqlalchemy.exc import IntegrityError
 
 from hkabtrak import db
 from hkabtrak.models import Class, Absence, Semester
+from hkabtrak.util import admin_required
 
 semester_bp = Blueprint('semester', __name__, template_folder='templates')
 
 
 @semester_bp.route('/list', methods=['GET'])
 @login_required
+@admin_required
 def semester_list():
     semesters = Semester.query.order_by(Semester.start_date.asc()).all()
     return render_template('semester_list.html', semesters=semesters)
@@ -20,6 +22,7 @@ def semester_list():
 
 @semester_bp.route('/create', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def create():
     if request.method == 'POST':
         name = request.form['name']
@@ -50,6 +53,7 @@ def create():
 
 @semester_bp.route('/edit/<int:semester_id>', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def edit(semester_id):
     semester = Semester.query.get_or_404(semester_id)
 
@@ -68,6 +72,7 @@ def edit(semester_id):
 
 @semester_bp.route('/delete/<int:semester_id>', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def delete(semester_id):
     semester = Semester.query.get_or_404(semester_id)
     db.session.delete(semester)
@@ -78,6 +83,7 @@ def delete(semester_id):
 
 @semester_bp.route('/delete_data/<int:semester_id>', methods=['GET'])
 @login_required
+@admin_required
 def delete_data(semester_id):
     semester = Semester.query.get(semester_id)
     if not semester:
@@ -101,6 +107,7 @@ def distribute_students_into_classes(students, class_size=14):
 
 @semester_bp.route('/populate_absences/<int:semester_id>', methods=['GET'])
 @login_required
+@admin_required
 def populate_absences(semester_id):
     semester = Semester.query.get(semester_id)
     if not semester:

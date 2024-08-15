@@ -5,13 +5,14 @@ from hkabtrak.models import Class, load_user, User, Absence
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from hkabtrak import db
-from hkabtrak.util import send_email
+from hkabtrak.util import send_email, admin_required
 
 staff_bp = Blueprint('staff', __name__, template_folder='templates')
 
 
 @staff_bp.route('/staff_register', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def staff_register():
     if request.method == 'POST':
         username = request.form['email']
@@ -64,6 +65,7 @@ def staff_login():
 
 @staff_bp.route('/staff_list')
 @login_required
+@admin_required
 def staff_list():
     staff = User.query.all()
     return render_template('staff_list.html', staff=staff)
@@ -101,6 +103,7 @@ def profile():
 
 @staff_bp.route('/set_staff_inactive/<int:staff_id>')
 @login_required
+@admin_required
 def set_staff_inactive(staff_id):
     staff = User.query.get_or_404(staff_id)
     staff.is_active = False

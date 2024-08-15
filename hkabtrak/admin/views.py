@@ -7,6 +7,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from hkabtrak import db
 from sqlalchemy.orm import joinedload
 
+from hkabtrak.util import admin_required
+
 admin_bp = Blueprint('admin', __name__, template_folder='templates')
 
 
@@ -25,6 +27,7 @@ def logout():
 
 @admin_bp.route('/staff')
 @login_required
+@admin_required
 def staff_list():
     staff = User.query.all()
     user_types = {
@@ -39,6 +42,7 @@ def staff_list():
 
 @admin_bp.route('/staff/edit/<int:staff_id>', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def staff_edit(staff_id):
     # Load the teacher data from the database based on user_id
     staff = User.query.get(staff_id)
@@ -66,6 +70,7 @@ def staff_edit(staff_id):
 
 @admin_bp.route('/courses')
 @login_required
+@admin_required
 def course_list():
     courses = Class.query.all()
     return render_template('courses.html', courses=courses)
@@ -73,6 +78,7 @@ def course_list():
 
 @admin_bp.route('/admin/reset_password/<int:staff_id>', methods=['POST'])
 @login_required
+@admin_required
 def reset_password(staff_id):
     if request.method == 'POST':
         new_password = request.form['new_password']
@@ -98,6 +104,7 @@ def reset_password(staff_id):
 # Route to get the classes for a specific teacher
 @admin_bp.route('/api/staff_classes/<int:staff_id>', methods=['GET'])
 @login_required
+@admin_required
 def get_staff_classes(staff_id):
     staff = User.query.get(staff_id)
     if staff:
@@ -110,6 +117,7 @@ def get_staff_classes(staff_id):
 # Route to get all available classes
 @admin_bp.route('/api/all_classes', methods=['GET'])
 @login_required
+@admin_required
 def get_all_classes():
     classes = Class.query.all()
     all_classes = [{'id': c.id, 'name': c.name} for c in classes]
@@ -117,6 +125,7 @@ def get_all_classes():
 
 @admin_bp.route('/api/add_class/<int:class_id>/<int:staff_id>', methods=['GET'])
 @login_required
+@admin_required
 def add_class(class_id, staff_id):
     staff = User.query.get(staff_id)
     class_to_add = Class.query.get(class_id)
@@ -131,6 +140,7 @@ def add_class(class_id, staff_id):
 # Route to remove a class from a teacher
 @admin_bp.route('/api/remove_class/<int:class_id>/<int:staff_id>', methods=['GET'])
 @login_required
+@admin_required
 def remove_class(class_id, staff_id):
     staff = User.query.get(staff_id)
     class_to_remove = Class.query.get(class_id)
