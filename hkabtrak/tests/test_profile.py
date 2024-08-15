@@ -1,9 +1,12 @@
 import unittest
+from unittest.mock import patch
+
 from flask import url_for
 from werkzeug.security import generate_password_hash
 
 from base_test import BaseTestCase, db
 from hkabtrak.models import User
+
 
 class TestProfile(BaseTestCase):
 
@@ -27,6 +30,10 @@ class TestProfile(BaseTestCase):
         ), follow_redirects=True)
 
     def test_change_password_success(self):
+        # Mock send_email
+        self.patcher_send_email = patch('hkabtrak.staff.views.send_email')  # Replace 'your_module' with the actual module name
+        self.mock_send_email = self.patcher_send_email.start()
+
         # Log in as the test user
         self.login('test@example.com', 'password123')
 
@@ -43,6 +50,9 @@ class TestProfile(BaseTestCase):
         # Verify the password was changed in the database
         user = User.query.filter_by(email='test@example.com').first()
         self.assertTrue(user.check_password('newpassword123'))
+
+        # Stop the mock
+        self.patcher_send_email.stop()
 
     def test_change_password_incorrect_current(self):
         # Log in as the test user
@@ -71,6 +81,7 @@ class TestProfile(BaseTestCase):
 
         # Check for an error message indicating mismatched passwords
         self.assertIn(b'New passwords do not match.', response.data)
+
 
 if __name__ == '__main__':
     unittest.main()

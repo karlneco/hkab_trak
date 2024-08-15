@@ -51,7 +51,8 @@ class TestLogin(BaseTestCase):
         ), follow_redirects=True)
 
         # Check if redirected to admin main page
-        self.assertIn(b'Admin Main Page', response.data)  # Placeholder text, update according to your template
+        self.assertIn('管理画面'.encode('utf-8'), response.data)
+
 
 if __name__ == '__main__':
     unittest.main()

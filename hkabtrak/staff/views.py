@@ -1,10 +1,9 @@
-from datetime import date, timedelta
-
 from flask import Blueprint, render_template, request, redirect, url_for, flash, get_flashed_messages
-from hkabtrak.models import Class, load_user, User, Absence
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import login_user, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash
+
 from hkabtrak import db
+from hkabtrak.models import User
 from hkabtrak.util import send_email, admin_required
 
 staff_bp = Blueprint('staff', __name__, template_folder='templates')

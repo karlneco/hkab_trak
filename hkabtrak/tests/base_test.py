@@ -20,3 +20,10 @@ class BaseTestCase(TestCase):
         # Tear down the test database
         db.session.remove()
         db.drop_all()
+
+    def login_as_admin(self):
+        # Log in as the admin user
+        return self.client.post('/staff/staff_login', data=dict(
+            username=self.admin_user.email,
+            password='adminpass'
+        ), follow_redirects=True)

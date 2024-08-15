@@ -1,13 +1,14 @@
 from datetime import datetime, date, timedelta
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash, get_flashed_messages
+from flask_login import login_required, current_user
+from flask_mail import Message
 from wtforms.validators import DataRequired
 
+from hkabtrak import db
+from hkabtrak import mail
 from hkabtrak.absence_form import AbsenceForm
 from hkabtrak.models import Absence, Class, load_user, User, Semester
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from hkabtrak import db, absences
-from flask_mail import Message
-from hkabtrak import mail
 
 absences_bp = Blueprint('absences', __name__, template_folder='templates')
 

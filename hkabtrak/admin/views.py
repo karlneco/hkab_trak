@@ -1,12 +1,9 @@
-from datetime import datetime
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
+from flask_login import login_required, logout_user
+from werkzeug.security import generate_password_hash
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from hkabtrak.models import Class, load_user, User
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
 from hkabtrak import db
-from sqlalchemy.orm import joinedload
-
+from hkabtrak.models import Class, User
 from hkabtrak.util import admin_required
 
 admin_bp = Blueprint('admin', __name__, template_folder='templates')
@@ -46,6 +43,10 @@ def staff_list():
 def staff_edit(staff_id):
     # Load the teacher data from the database based on user_id
     staff = User.query.get(staff_id)
+
+    # If the staff member does not exist, return a 404 error
+    if not staff:
+        abort(404)
 
     staff_classes = [{'id': c.id, 'name': c.name} for c in staff.classes]
 

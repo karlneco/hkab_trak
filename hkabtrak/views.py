@@ -1,15 +1,9 @@
-from hkabtrak import db
-from datetime import datetime, date
-from flask import Blueprint, render_template, request, redirect, url_for, flash, get_flashed_messages
+from datetime import datetime
+
+from flask import render_template, Blueprint
 
 from hkabtrak.absence_form import AbsenceForm
-from hkabtrak.models import Class, load_user, User, Absence
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask import render_template, request, redirect, url_for, flash, Blueprint
-from hkabtrak.models import Class, Absence
-from flask_mail import Message
-from hkabtrak import mail
+from hkabtrak.models import Class
 
 valid_reasons = ['Absent', 'Late', 'Leaving Early', 'Absent for a Time', '欠席', '遅刻', '早退', '時間で欠席']
 
