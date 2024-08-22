@@ -272,4 +272,5 @@ def send_absence_notification(parent_email, recipients, student_name, grade, abs
     bcc_ = [current_app.config['MAIL_BCC']]
     recipients.append(parent_email)
     msg = Message(subject, recipients=recipients, bcc=bcc_, html=body)
+    msg.sender = ('カルガリー補習授業校', current_app.config['MAIL_DEFAULT_SENDER'])
     mail.send(msg)
