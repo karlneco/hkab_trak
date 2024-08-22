@@ -5,10 +5,9 @@ from flask_login import login_required, current_user
 from flask_mail import Message
 from wtforms.validators import DataRequired
 
-from hkabtrak import db
-from hkabtrak import mail
+from hkabtrak import db, mail, bcc_address
 from hkabtrak.absence_form import AbsenceForm
-from hkabtrak.models import Absence, Class, load_user, User, Semester
+from hkabtrak.models import Absence, Class, load_user, User, Semester, load_course
 
 absences_bp = Blueprint('absences', __name__, template_folder='templates')
 
@@ -41,9 +40,10 @@ def record_absence():
                     flash(f"Error in {getattr(form, field).label.text}: {error}", 'danger')
 
     captcha_response = request.form['g-recaptcha-response']
-    if len(captcha_response) > 0:
+    if 1==1: #len(captcha_response) > 0:
         parent_email = form.parent_email.data
         class_id = form.class_id.data
+        grade_name = load_course(class_id).name
         student_name = form.student_name.data
         absence_type = form.absence_type.data
         reason = form.reason.data
@@ -72,7 +72,7 @@ def record_absence():
         cls = Class.query.get(class_id)
         if cls:
             staff_emails = [user.email for user in cls.staff]
-            send_absence_notification(parent_email, staff_emails, student_name, absence_type, reason, date, start_time, end_time,
+            send_absence_notification(parent_email, staff_emails, student_name, grade_name, absence_type, reason, date, start_time, end_time,
                                       comment)
 
         get_flashed_messages(with_categories=True)
@@ -96,7 +96,10 @@ def list():
     if not user:
         return redirect(url_for('login'))
 
-    classes = user.classes
+    if user.user_type == 'A':
+        classes = Class.query.all()
+    else:
+        classes = user.classes
     all_absences = []
     date_filter = request.args.get('filterDate')  # Get date filter from query parameters
 
@@ -126,9 +129,13 @@ def list():
 @login_required
 def students():
     today = date.today()
+    user = load_user(current_user.get_id())
 
     # Fetch all classes where the teacher is involved
-    classes = Class.query.join(Class.staff).filter(User.id == current_user.id).all()
+    if user.user_type == 'A':
+        classes = Class.query.all()
+    else:
+        classes = Class.query.join(Class.staff).filter(User.id == current_user.id).all()
 
     semesters = Semester.query.order_by(Semester.start_date.asc()).all()  # Order by start date descending
     selected_semester_id = request.args.get('semester_id', type=int)
@@ -242,12 +249,13 @@ def calculate_absence_duration(cls, absence):
     return duration.total_seconds() / 3600  # Convert duration to hours
 
 
-def send_absence_notification(parent_email, recipients, student_name, absence_type, reason, absence_date, start_time, end_time,
+def send_absence_notification(parent_email, recipients, student_name, grade, absence_type, reason, absence_date, start_time, end_time,
                               comment):
     """
     Send email notifications to the specified recipients about the student's absence.
+    Send from info@calgaryhoshuko.org
     """
-    subject = student_name + "さんの欠席連絡受領のお知らせ_" + absence_date.strftime('%Y-%m-%d')
+    subject = grade + student_name + "さんの欠席欠課連絡受領のお知らせ_" + absence_date.strftime('%Y-%m-%d')
     body = render_template(
         'absence_notification.html',
         student_name=student_name,
@@ -258,19 +266,6 @@ def send_absence_notification(parent_email, recipients, student_name, absence_ty
         end_time=end_time,
         comment=comment
     )
-    msg = Message(subject, recipients=recipients, html=body)
-    mail.send(msg)
-
-    subject = student_name + "さんの欠席連絡受領のお知らせ_" + absence_date.strftime('%Y-%m-%d')
-    body = render_template(
-        'absence_notification.html',
-        student_name=student_name,
-        reason=reason,
-        absence_type=absence_type,
-        date=absence_date,
-        start_time=start_time,
-        end_time=end_time,
-        comment=comment
-    )
-    msg = Message(subject, recipients=[parent_email], html=body)
+    bcc_ = bcc_address
+    msg = Message(subject, recipients=recipients + parent_email, bcc=bcc_, html=body)
     mail.send(msg)
