@@ -265,6 +265,6 @@ def send_absence_notification(parent_email, recipients, student_name, grade, abs
         end_time=end_time,
         comment=comment
     )
-    bcc_ = bcc_address
+    bcc_ = [bcc_address]
     msg = Message(subject, recipients=recipients + parent_email, bcc=bcc_, html=body)
     mail.send(msg)
