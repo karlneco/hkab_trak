@@ -39,7 +39,10 @@ def record_absence():
                 for error in errors:
                     flash(f"Error in {getattr(form, field).label.text}: {error}", 'danger')
 
-    captcha_response = request.form['g-recaptcha-response']
+    if current_app.config.get('RECAPTCHA_ENABLED'):
+        captcha_response = request.form['g-recaptcha-response']
+    else:
+        captcha_response = 'testing'
     if len(captcha_response) > 0:
         parent_email = form.parent_email.data
         class_id = form.class_id.data
@@ -258,6 +261,7 @@ def send_absence_notification(parent_email, recipients, student_name, grade, abs
     body = render_template(
         'absence_notification.html',
         student_name=student_name,
+        grade=grade,
         reason=reason,
         absence_type=absence_type,
         date=absence_date,
@@ -266,5 +270,6 @@ def send_absence_notification(parent_email, recipients, student_name, grade, abs
         comment=comment
     )
     bcc_ = [current_app.config['MAIL_BCC']]
-    msg = Message(subject, recipients=recipients + parent_email, bcc=bcc_, html=body)
+    recipients.append(parent_email)
+    msg = Message(subject, recipients=recipients, bcc=bcc_, html=body)
     mail.send(msg)
