@@ -40,7 +40,7 @@ def record_absence():
                     flash(f"Error in {getattr(form, field).label.text}: {error}", 'danger')
 
     captcha_response = request.form['g-recaptcha-response']
-    if 1==1: #len(captcha_response) > 0:
+    if len(captcha_response) > 0:
         parent_email = form.parent_email.data
         class_id = form.class_id.data
         grade_name = load_course(class_id).name
@@ -253,7 +253,6 @@ def send_absence_notification(parent_email, recipients, student_name, grade, abs
                               comment):
     """
     Send email notifications to the specified recipients about the student's absence.
-    Send from info@calgaryhoshuko.org
     """
     subject = grade + student_name + "さんの欠席欠課連絡受領のお知らせ_" + absence_date.strftime('%Y-%m-%d')
     body = render_template(
