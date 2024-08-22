@@ -1,6 +1,6 @@
 from datetime import datetime, date, timedelta
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, get_flashed_messages
+from flask import Blueprint, render_template, request, redirect, url_for, flash, get_flashed_messages, current_app
 from flask_login import login_required, current_user
 from flask_mail import Message
 from wtforms.validators import DataRequired
@@ -265,6 +265,6 @@ def send_absence_notification(parent_email, recipients, student_name, grade, abs
         end_time=end_time,
         comment=comment
     )
-    bcc_ = [bcc_address]
+    bcc_ = [current_app.config['MAIL_BCC']]
     msg = Message(subject, recipients=recipients + parent_email, bcc=bcc_, html=body)
     mail.send(msg)
