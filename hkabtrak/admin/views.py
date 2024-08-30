@@ -159,3 +159,25 @@ def remove_class(class_id, staff_id):
         return jsonify({'message': 'Class removed successfully'})
     else:
         return jsonify({'error': 'Teacher or class not found'})
+
+
+@admin_bp.route('/delete_staff/<int:staff_id>', methods=['POST'])
+@login_required
+@admin_required
+def delete_staff(staff_id):
+    # Retrieve the staff member from the database
+    staff = User.query.get(staff_id)
+
+    if staff:
+        # Remove associations with any classes
+        staff.classes = []
+
+        # Delete the staff member from the database
+        db.session.delete(staff)
+        db.session.commit()
+
+        flash('Staff member deleted successfully', 'success')
+        return redirect(url_for('admin.staff_list'))
+    else:
+        flash('Staff member not found', 'error')
+        return redirect(url_for('admin.staff_list'))
