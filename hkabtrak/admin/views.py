@@ -3,7 +3,7 @@ from flask_login import login_required, logout_user
 from werkzeug.security import generate_password_hash
 
 from hkabtrak import db
-from hkabtrak.models import Class, User
+from hkabtrak.models import Class, User, staff_class
 from hkabtrak.util import admin_required
 
 admin_bp = Blueprint('admin', __name__, template_folder='templates')
@@ -147,8 +147,15 @@ def remove_class(class_id, staff_id):
     class_to_remove = Class.query.get(class_id)
 
     if staff and class_to_remove:
-        staff.classes.remove(class_to_remove)
+        # Find all instances of the association and delete them
+        association_table = staff_class
+        association_query = association_table.delete().where(
+            association_table.c.user_id == staff_id,
+            association_table.c.class_id == class_id
+        )
+        db.session.execute(association_query)
         db.session.commit()
+
         return jsonify({'message': 'Class removed successfully'})
     else:
         return jsonify({'error': 'Teacher or class not found'})

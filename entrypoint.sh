@@ -4,6 +4,7 @@
 set -e
 
 # Set Flask app environment variable
+export FLASK_ENV=production
 export FLASK_APP=main.py
 
 # Initialize database migrations if the migrations folder does not exist
@@ -20,7 +21,7 @@ migrate_db() {
 migrate_db
 
 # Allow time for database migrations to complete
-sleep 5
+sleep 3
 
 # Create admin user
 echo "Creating admin user..."
