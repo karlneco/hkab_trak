@@ -62,6 +62,10 @@
                 <th>Email</th>
                 <th>宿題受け渡し方法</th>
                 <th>学年</th>
+                {% if current_user.user_type == 'A' %}
+                    <th>削除</th>
+                {% endif %}
+
             </tr>
             </thead>
             <tbody>
@@ -75,7 +79,8 @@
 
                 {%  if not selected_date %}
                 <tr {% if absence.date > this_saturday %}style="color: lightgrey; display: none;"{% elif absence.date < this_saturday %}
-                    style="color: gray; display: none;"{% endif %} class="absence-entry" data-class-id="{{ absence.class_id }}"
+                    style="color: gray; display: none;"{% endif %} class="absence-entry" data-absence-id="{{ absence.id }}"
+                    data-class-id="{{ absence.class_id }}"
                     data-current="{% if absence.date != this_saturday %}false{% else %}true{% endif %}">
                 {% else %}
                     <tr class="absence-entry" data-class-id="{{ absence.class_id }}"
@@ -90,6 +95,13 @@
                     <td>{{ absence.parent_email }}</td>
                     <td style="white-space: pre-wrap;"> {{ absence.comment }}</td>
                     <td>{{ absence.course.name }}</td>
+                    {% if current_user.user_type == 'A' %}
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="confirmDeleteAbsence({{ absence.id }})">
+                            削除
+                            </button>
+                        </td>
+                    {% endif %}
                 </tr>
                 {% set previous_date = absence.date %}
             {% endfor %}
@@ -151,6 +163,37 @@
         } else {
             alert('Please select a date.');
         }
+    }
+        function confirmDeleteAbsence(absenceId) {
+        // Show a confirmation dialog
+        if (confirm("この欠席記録を削除してもよろしいですか？")) {
+            // If confirmed, send an AJAX request to delete the absence
+            deleteAbsence(absenceId);
+        }
+    }
+
+    function deleteAbsence(absenceId) {
+        fetch(`/absences/api/delete_absence/${absenceId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': "{{ csrf_token() }}"  // Ensure CSRF token is sent
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove the row from the table
+                const row = document.querySelector(`tr[data-absence-id='${absenceId}']`);
+                if (row) {
+                    row.remove();  // Remove the row from the DOM
+                }
+            } else {
+                alert("削除に失敗しました。");
+            }
+        })        .catch(error => {
+            console.error('Error:', error);
+            alert("エラーが発生しました。もう一度お試しください。");
+        });
     }
 </script>
 

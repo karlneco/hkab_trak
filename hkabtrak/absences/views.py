@@ -1,6 +1,7 @@
 from datetime import datetime, date, timedelta
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, get_flashed_messages, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, get_flashed_messages, current_app, \
+    jsonify
 from flask_login import login_required, current_user
 from flask_mail import Message
 from wtforms.validators import DataRequired
@@ -8,6 +9,7 @@ from wtforms.validators import DataRequired
 from hkabtrak import db, mail, bcc_address
 from hkabtrak.absence_form import AbsenceForm
 from hkabtrak.models import Absence, Class, load_user, User, Semester, load_course
+from hkabtrak.util import admin_required
 
 absences_bp = Blueprint('absences', __name__, template_folder='templates')
 
@@ -75,7 +77,8 @@ def record_absence():
         cls = Class.query.get(class_id)
         if cls:
             staff_emails = [user.email for user in cls.staff]
-            send_absence_notification(parent_email, staff_emails, student_name, grade_name, absence_type, reason, date, start_time, end_time,
+            send_absence_notification(parent_email, staff_emails, student_name, grade_name, absence_type, reason, date,
+                                      start_time, end_time,
                                       comment)
 
         get_flashed_messages(with_categories=True)
@@ -126,6 +129,22 @@ def list():
 
     return render_template('list.html', absences=all_absences_sorted, classes=classes, this_saturday=this_saturday,
                            selected_date=selected_date)
+
+
+@absences_bp.route('/api/delete_absence/<int:absence_id>', methods=['DELETE'])
+@login_required
+@admin_required
+def delete_absence(absence_id):
+    # Get the absence record
+    absence = Absence.query.get(absence_id)
+
+    if absence:
+        # Delete the record
+        db.session.delete(absence)
+        db.session.commit()
+        return jsonify({"success": True}), 200
+    else:
+        return jsonify({"error": "Absence not found"}), 404
 
 
 @absences_bp.route('/students')
@@ -219,16 +238,16 @@ def calculate_absence_duration(cls, absence):
     lunch_end = datetime.combine(absence.date, cls.lunch_end)
 
     match absence.absence_type:
-        case 'Absent':
+        case '欠席':  # Absent
             absence_start = class_start
             absence_end = class_end
-        case 'Late':
+        case '遅刻':  # Late
             absence_start = class_start
             absence_end = datetime.combine(absence.date, absence.start_time)
-        case 'Leaving Early':
+        case '早退':  # Leaving Early
             absence_start = datetime.combine(absence.date, absence.end_time)
             absence_end = class_end
-        case 'Absent for a Time':
+        case '中抜け':  # Absent for a time
             absence_start = datetime.combine(absence.date, absence.start_time)
             absence_end = datetime.combine(absence.date, absence.end_time)
 
@@ -252,7 +271,8 @@ def calculate_absence_duration(cls, absence):
     return duration.total_seconds() / 3600  # Convert duration to hours
 
 
-def send_absence_notification(parent_email, recipients, student_name, grade, absence_type, reason, absence_date, start_time, end_time,
+def send_absence_notification(parent_email, recipients, student_name, grade, absence_type, reason, absence_date,
+                              start_time, end_time,
                               comment):
     """
     Send email notifications to the specified recipients about the student's absence.
