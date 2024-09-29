@@ -51,6 +51,7 @@ function formatDuration(hours) {
         const minutesPart = totalMinutes % 60;
         return `${hoursPart}h ${minutesPart}min`;
     }
+    else return '0h 0min'
 }
 
 document.querySelectorAll('.duration').forEach(element => {

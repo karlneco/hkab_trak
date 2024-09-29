@@ -223,6 +223,7 @@ def student_absences(grade, student_name):
             duration = calculate_absence_duration(absence.course, absence)
             setattr(absence, 'duration', duration)
         else:
+            setattr(absence, 'duration', 0)
             days_missed += 1
 
     return render_template('single_student.html', absences=absences, semesters=semesters,
