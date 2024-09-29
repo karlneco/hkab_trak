@@ -185,7 +185,7 @@ def students():
                     if absence.student_name not in student_absences:
                         student_absences[absence.student_name] = {'days': 0, 'hours': 0}
 
-                    if absence.absence_type == 'Absent':
+                    if absence.absence_type == '欠席':
                         if absence.student_name in student_absences:
                             student_absences[absence.student_name]['days'] += 1
                     else:
