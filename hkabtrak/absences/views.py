@@ -219,7 +219,7 @@ def student_absences(grade, student_name):
 
     days_missed = 0
     for absence in absences:
-        if absence.absence_type != 'Absent':
+        if absence.absence_type != '欠席':
             duration = calculate_absence_duration(absence.course, absence)
             setattr(absence, 'duration', duration)
         else:
