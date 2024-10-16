@@ -1,3 +1,5 @@
+from sqlalchemy import func
+
 from hkabtrak import db, login_manager
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
@@ -46,6 +48,7 @@ class Absence(db.Model):
     comment = db.Column(db.String(512), nullable=True)
     class_id = db.Column(db.Integer, db.ForeignKey('class.id'))
     course = db.relationship('Class', back_populates='absences')
+    created_at = db.Column(db.DateTime, default=func.now())  # New field for creation timestamp
 
     def __repr__(self):
         return f'<Absence {self.student_name} {self.date}>'
