@@ -234,6 +234,22 @@
         });
     });
 
+    document.addEventListener("DOMContentLoaded", function() {
+        const dateField = document.getElementById("date");
+
+        // Get the current date in the user's local timezone
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+        const day = String(today.getDate()).padStart(2, '0');
+
+        // Format the date as YYYY-MM-DD without timezone conversion
+        const localToday = `${year}-${month}-${day}`;
+
+        dateField.value = localToday; // Set the default value
+        dateField.min = localToday;   // Set the min attribute to today to prevent selecting past dates
+    });
+
 </script>
 </body>
 </html>
