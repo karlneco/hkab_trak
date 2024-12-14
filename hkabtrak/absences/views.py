@@ -19,6 +19,7 @@ valid_types = ['欠席', '遅刻', '早退', '中抜け']
 @absences_bp.route('/record_absence', methods=['GET', 'POST'])
 def record_absence():
     form = AbsenceForm()
+
     default_course_choice = [('', '学年を選択してください')]
     form.class_id.choices = default_course_choice + [
         (cls.id, cls.name, {'data-instructions': cls.instructions or 'None'}) for cls in Class.query.all()
@@ -35,16 +36,18 @@ def record_absence():
             form.start_time.validators.append(DataRequired(message="Leaving time is required for 'Absent for a Time'."))
             form.end_time.validators.append(DataRequired(message="Return time is required for 'Absent for a Time'."))
 
-        form.validate()
-        if form.errors:
+        # Then validate the form
+        if not form.validate():
             for field, errors in form.errors.items():
                 for error in errors:
                     flash(f"Error in {getattr(form, field).label.text}: {error}", 'danger')
+            return render_template('new_absence.html', form=form)
 
-    if current_app.config.get('RECAPTCHA_ENABLED'):
-        captcha_response = request.form['g-recaptcha-response']
-    else:
+    if current_app.config.get('RECAPTCHA_DISABLED', True):
         captcha_response = 'testing'
+    else:
+        captcha_response = request.form['g-recaptcha-response']
+
     if len(captcha_response) > 0:
         parent_email = form.parent_email.data
         class_id = form.class_id.data

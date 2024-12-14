@@ -41,6 +41,10 @@
         {% endif %}
     {% endwith %}
 
+<noscript>
+        <meta http-equiv="refresh" content="0; url={{ url_for('root.javascript_required') }}">
+</noscript>
+
     <h1 class="text-center mt-5">カルガリー補習授業校<br/>欠席・早退・遅刻・中抜け連絡フォーム</h1>
     <div class="row justify-content-center mt-5">
         <div class="col-md-6">

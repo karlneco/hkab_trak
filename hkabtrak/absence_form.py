@@ -1,3 +1,5 @@
+import os
+
 from flask_wtf import FlaskForm, RecaptchaField
 from wtforms import StringField, SelectField, DateField, TimeField, TextAreaField, RadioField, validators
 from wtforms.validators import DataRequired, Email
@@ -35,4 +37,6 @@ class AbsenceForm(FlaskForm):
     start_time = TimeField('Start Time', validators=(validators.Optional(),))
     end_time = TimeField('End Time', validators=(validators.Optional(),))
     comment = TextAreaField('Comment', validators=[DataRequired()])
-    recaptcha = RecaptchaField()
+    is_production = os.getenv('FLASK_ENV') == 'production'
+    if is_production:
+        recaptcha = RecaptchaField()
