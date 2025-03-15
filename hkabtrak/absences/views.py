@@ -1,15 +1,15 @@
+import threading
 from datetime import datetime, date, timedelta
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, get_flashed_messages, current_app, \
     jsonify
 from flask_login import login_required, current_user
-from flask_mail import Message
 from wtforms.validators import DataRequired
 
 from hkabtrak import db, mail, bcc_address
 from hkabtrak.absence_form import AbsenceForm
 from hkabtrak.models import Absence, Class, load_user, User, Semester, load_course
-from hkabtrak.util import admin_required
+from hkabtrak.util import admin_required, send_email
 
 absences_bp = Blueprint('absences', __name__, template_folder='templates')
 
@@ -38,6 +38,7 @@ def record_absence():
 
         # Then validate the form
         if not form.validate():
+            print("Form validation errors:", form.errors)  # Debugging
             for field, errors in form.errors.items():
                 for error in errors:
                     flash(f"Error in {getattr(form, field).label.text}: {error}", 'danger')
@@ -281,7 +282,8 @@ def send_absence_notification(parent_email, recipients, student_name, grade, abs
     """
     Send email notifications to the specified recipients about the student's absence.
     """
-    subject = grade + student_name + "さんの欠席欠課連絡受領のお知らせ_" + absence_date.strftime('%Y-%m-%d')
+    subject = f"{grade} {student_name}さんの欠席欠課連絡受領のお知らせ_{absence_date.strftime('%Y-%m-%d')}"
+
     body = render_template(
         'absence_notification.html',
         student_name=student_name,
@@ -293,8 +295,9 @@ def send_absence_notification(parent_email, recipients, student_name, grade, abs
         end_time=end_time,
         comment=comment
     )
-    cc_ = [current_app.config['MAIL_CC']]
-    recipients.append(parent_email)
-    msg = Message(subject, recipients=recipients, cc=cc_, html=body)
-    msg.sender = ('カルガリー補習授業校', current_app.config['MAIL_DEFAULT_SENDER'])
-    mail.send(msg)
+
+    cc_list = [current_app.config['MAIL_CC']] if current_app.config.get('MAIL_CC') else None
+    to_list = recipients + [parent_email]
+
+    email_thread = threading.Thread(target=send_email, args=(to_list, subject, body), kwargs={'cc': cc_list})
+    email_thread.start()

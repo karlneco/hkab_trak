@@ -23,7 +23,7 @@ class TestAbsences(TestCase):
         # Student absent for the whole day
         absence = Absence(
             date=self.test_date,
-            absence_type='Absent'
+            absence_type='欠席'
         )
         duration = calculate_absence_duration(self.test_class, absence)
         self.assertEqual(duration, 5)  # missed 5 hours (excluding lunch)
@@ -33,7 +33,7 @@ class TestAbsences(TestCase):
         absence = Absence(
             date=self.test_date,
             start_time=time(10, 0),
-            absence_type='Late',
+            absence_type='遅刻',
         )
         duration = calculate_absence_duration(self.test_class, absence)
         self.assertEqual(duration, 1)  # Missed 1 hour - from 9:00am to 10:00am
@@ -43,7 +43,7 @@ class TestAbsences(TestCase):
         absence = Absence(
             date=self.test_date,
             end_time=time(14, 0),
-            absence_type='Leaving Early'
+            absence_type='早退'
         )
         duration = calculate_absence_duration(self.test_class, absence)
         self.assertEqual(duration, 1)  # Missed 1 hour; from 2:00pm to 3:00pm
@@ -54,7 +54,7 @@ class TestAbsences(TestCase):
             date=self.test_date,
             start_time=time(10, 0),
             end_time=time(11, 0),
-            absence_type='Absent for a Time'
+            absence_type='中抜け'
         )
         duration = calculate_absence_duration(self.test_class, absence)
         self.assertEqual(duration, 1)  # missed 1 hour; from 10:00am to 11:00am
@@ -65,7 +65,7 @@ class TestAbsences(TestCase):
             date=self.test_date,
             start_time=time(13, 30),
             end_time=time(14, 30),
-            absence_type='Absent for a Time'
+            absence_type='中抜け'
         )
         duration = calculate_absence_duration(self.test_class, absence)
         self.assertEqual(duration, 1)  # missed 1 hour; from 1:30pm to 2:30pm
@@ -76,7 +76,7 @@ class TestAbsences(TestCase):
             date=self.test_date,
             start_time=time(10, 30),
             end_time=time(14, 30),
-            absence_type='Absent for a Time'
+            absence_type='中抜け'
         )
         duration = calculate_absence_duration(self.test_class, absence)
         self.assertEqual(duration, 3)  # missed 3 hour; from 10:00am to 12:00pm and 1:00pm to 2:00pm
@@ -87,7 +87,7 @@ class TestAbsences(TestCase):
             date=self.test_date,
             start_time=time(11, 0),
             end_time=time(12, 30),
-            absence_type='Absent for a Time'
+            absence_type='中抜け'
         )
         duration = calculate_absence_duration(self.test_class, absence)
         self.assertEqual(duration, 1)  # missed 1 hour; from 11:00pm to 12:30pm
@@ -99,7 +99,7 @@ class TestAbsences(TestCase):
             date=self.test_date,
             start_time=time(12, 30),
             end_time=time(14, 0),
-            absence_type='Absent for a Time'
+            absence_type='中抜け'
         )
         duration = calculate_absence_duration(self.test_class, absence)
         self.assertEqual(duration, 1)  # missed 1 hour; from 11:00pm to 12:30pm

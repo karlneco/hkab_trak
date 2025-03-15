@@ -11,3 +11,6 @@ Flask-Testing
 Flask-Mail
 Flask-WTF
 gunicorn==20.1.0
+sendgrid
+requests
+WTForms
