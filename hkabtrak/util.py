@@ -70,7 +70,7 @@ def send_email(to_emails, subject, body, cc=None, attachments=None):
 
         # Send the email via SendGrid
         sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
-        response = sg.send(message, request_timeout=5)  # Timeout after 5 seconds
+        response = sg.send(message)
         logger.info(f"Email sent to {to_emails}: {response.status_code}")
         return response.status_code in [200, 202]
 
