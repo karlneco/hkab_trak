@@ -7,17 +7,6 @@ set -e
 export FLASK_ENV=production
 export FLASK_APP=main.py
 
-# Define domain and email for SSL (these can be passed in via environment or hardcoded)
-export DOMAIN=absent.calgaryhoshuko.org
-export EMAIL=admin@calgaryhoshuko.org
-
-# Define paths to SSL cert/key
-export CERT_PATH=/etc/letsencrypt/live/$DOMAIN/fullchain.pem
-export KEY_PATH=/etc/letsencrypt/live/$DOMAIN/privkey.pem
-
-# Start cron (needed if using certbot renew via cron later)
-cron
-
 # Initialize database migrations if the migrations folder does not exist
 flask db init || true
 
@@ -36,18 +25,6 @@ sleep 3
 echo "Creating admin user..."
 flask create-admin
 
-# Generate cert if not present
-if [ ! -f "$CERT_PATH" ] || [ ! -f "$KEY_PATH" ]; then
-  echo "Generating new SSL certificate for $DOMAIN..."
-  certbot certonly --standalone --non-interactive --agree-tos -m "$EMAIL" -d "$DOMAIN"
-else
-  echo "SSL certificate already exists."
-fi
-
-# (Optional) Symlink for compatibility
-ln -sf "$CERT_PATH" /app/server.crt
-ln -sf "$KEY_PATH" /app/server.key
-
-# Start the Flask app with Gunicorn and SSL
-echo "Starting Flask application with Gunicorn and SSL..."
-exec gunicorn -w 4 -b 0.0.0.0:1473 --keyfile "$KEY_PATH" --certfile "$CERT_PATH" "main:app"
+# Start the Flask app with Gunicorn (HTTP only — SSL handled by Traefik)
+echo "Starting Flask application with Gunicorn on port 8000..."
+exec gunicorn -w 4 -b 0.0.0.0:8000 "main:app"
