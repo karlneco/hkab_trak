@@ -37,6 +37,9 @@ else
   echo "SSL certificate already exists."
 fi
 
+ln -sf /etc/letsencrypt/live/absent.calgaryhoshuko.org/fullchain.pem /app/server.crt
+ln -sf /etc/letsencrypt/live/absent.calgaryhoshuko.org/privkey.pem /app/server.key
+
 # Start the Flask app with gunicorn and certs
 echo "Starting Flask application with Gunicorn and SSL..."
 exec gunicorn -w 4 -b 0.0.0.0:1473 --keyfile "$KEY_PATH" --certfile "$CERT_PATH" "main:app"
