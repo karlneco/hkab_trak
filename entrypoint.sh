@@ -7,6 +7,9 @@ set -e
 export FLASK_ENV=production
 export FLASK_APP=main.py
 
+# Start cron in the background
+cron
+
 # Initialize database migrations if the migrations folder does not exist
 flask db init || true
 
@@ -27,6 +30,13 @@ sleep 3
 echo "Creating admin user..."
 flask create-admin
 
-# Start the Flask application with Gunicorn
-echo "Starting Flask application with Gunicorn..."
-exec gunicorn -w 4 -b 0.0.0.0:1473 --keyfile '/app/server.key' --certfile '/app/server.crt' "main:app"
+if [ ! -f "$CERT_PATH" ] || [ ! -f "$KEY_PATH" ]; then
+  echo "Generating new SSL certificate for $DOMAIN..."
+  certbot certonly --standalone --non-interactive --agree-tos -m "$EMAIL" -d "$DOMAIN"
+else
+  echo "SSL certificate already exists."
+fi
+
+# Start the Flask app with gunicorn and certs
+echo "Starting Flask application with Gunicorn and SSL..."
+exec gunicorn -w 4 -b 0.0.0.0:1473 --keyfile "$KEY_PATH" --certfile "$CERT_PATH" "main:app"
