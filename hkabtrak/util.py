@@ -45,10 +45,12 @@ def send_email(to_emails, subject, body, cc=None, attachments=None):
     """
     configuration = sib_api_v3_sdk.Configuration()
     configuration.api_key['api-key'] = os.getenv("BREVO_API_KEY")
-    print("API: ", os.getenv("BREVO_API_KEY"))
+    logger.info(f"BREVO_API_KEY: {os.getenv('BREVO_API_KEY')}")
+
     try:
         api_client = sib_api_v3_sdk.ApiClient(configuration)
-        print("default headers=", api_client.default_headers)
+        logger.info(f"default headers: {api_client.default_headers}")
+
         api_instance = sib_api_v3_sdk.TransactionalEmailsApi(api_client)
 
         # Convert recipients
