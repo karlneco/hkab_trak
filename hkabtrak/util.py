@@ -34,15 +34,18 @@ file_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 logger.addHandler(file_handler)
 
-# Setup Brevo API configuration
-configuration = sib_api_v3_sdk.Configuration()
-configuration.api_key['api-key'] = os.getenv("BREVO_API_KEY")
+# # Setup Brevo API configuration
+# configuration = sib_api_v3_sdk.Configuration()
+# configuration.api_key['api-key'] = os.getenv("BREVO_API_KEY")
 
 
 def send_email(to_emails, subject, body, cc=None, attachments=None):
     """
     Send an email using Brevo (Sendinblue) transactional email API.
     """
+    configuration = sib_api_v3_sdk.Configuration()
+    configuration.api_key['api-key'] = os.getenv("BREVO_API_KEY")
+    print("API: ", os.getenv("BREVO_API_KEY"))
     try:
         api_client = sib_api_v3_sdk.ApiClient(configuration)
         print("default headers=", api_client.default_headers)
