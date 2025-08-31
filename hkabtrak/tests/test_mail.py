@@ -1,108 +1,103 @@
 import os
 import unittest
 from unittest.mock import patch, MagicMock
-from hkabtrak.util import send_email
+from dotenv import load_dotenv
+
+from hkabtrak.util import send_email  # Adjust if module path differs
+
+# Load environment variables from .env
+load_dotenv()
+
 
 class TestSendEmail(unittest.TestCase):
 
-    @patch("hkabtrak.util.SendGridAPIClient")
-    def test_send_email_success(self, mock_sendgrid_client):
+    @patch("hkabtrak.util.sib_api_v3_sdk.TransactionalEmailsApi")
+    def test_send_email_success(self, mock_brevo_client):
         """Test successful email sending"""
 
         # Mock response for a successful email send
         mock_response = MagicMock()
-        mock_response.status_code = 202  # SendGrid returns 202 for success
-        mock_sendgrid_client.return_value.send.return_value = mock_response
+        mock_response.message_id = "mocked-message-id"
+        mock_brevo_client.return_value.send_transac_email.return_value = mock_response
 
-        # Call the function
         result = send_email(
-            to_emails=["test@example.com"],
-            subject="Test Subject",
-            body="<p>This is a test email.</p>"
+            to_emails=[os.getenv("TEST_EMAIL_TO")],
+            subject="✅ Test Email Success",
+            body="<p>This is a mocked successful test email.</p>"
         )
 
-        # Assertions
-        self.assertTrue(result)  # Function should return True on success
-        mock_sendgrid_client.return_value.send.assert_called_once()  # Ensure send() was called
+        self.assertTrue(result)
+        mock_brevo_client.return_value.send_transac_email.assert_called_once()
 
-    @patch("hkabtrak.util.SendGridAPIClient")
-    def test_send_email_failure(self, mock_sendgrid_client):
+    @patch("hkabtrak.util.sib_api_v3_sdk.TransactionalEmailsApi")
+    def test_send_email_failure(self, mock_brevo_client):
         """Test email sending failure due to API error"""
 
-        # Mock response for a failed email send
-        mock_sendgrid_client.return_value.send.side_effect = Exception("API Error")
+        mock_brevo_client.return_value.send_transac_email.side_effect = Exception("Simulated API Error")
 
-        # Call the function
         result = send_email(
-            to_emails=["test@example.com"],
-            subject="Test Subject",
-            body="<p>This is a test email.</p>"
+            to_emails=[os.getenv("TEST_EMAIL_TO")],
+            subject="❌ Failure Test",
+            body="<p>Simulated API error.</p>"
         )
 
-        # Assertions
-        self.assertFalse(result)  # Function should return False on failure
+        self.assertFalse(result)
 
-    @patch("hkabtrak.util.SendGridAPIClient")
-    def test_send_email_timeout(self, mock_sendgrid_client):
-        """Test email sending timeout"""
+    @patch("hkabtrak.util.sib_api_v3_sdk.TransactionalEmailsApi")
+    def test_send_email_with_cc(self, mock_brevo_client):
+        """Test email sending with CC"""
 
-        # Simulate a timeout exception
-        mock_sendgrid_client.return_value.send.side_effect = TimeoutError("Request Timeout")
-
-        # Call the function
-        result = send_email(
-            to_emails=["test@example.com"],
-            subject="Test Subject",
-            body="<p>This is a test email.</p>"
-        )
-
-        # Assertions
-        self.assertFalse(result)  # Function should return False on timeout
-
-    @patch("hkabtrak.util.SendGridAPIClient")
-    def test_send_email_with_cc(self, mock_sendgrid_client):
-        """Test email sending with CC recipients"""
-
-        # Mock successful response
         mock_response = MagicMock()
-        mock_response.status_code = 202
-        mock_sendgrid_client.return_value.send.return_value = mock_response
+        mock_response.message_id = "cc-test-id"
+        mock_brevo_client.return_value.send_transac_email.return_value = mock_response
 
-        # Call the function with CC
         result = send_email(
-            to_emails=["recipient@example.com"],
-            subject="CC Test Email",
-            body="<p>Testing CC.</p>",
-            cc=["cc@example.com"]
+            to_emails=[os.getenv("TEST_EMAIL_TO")],
+            subject="📬 CC Test",
+            body="<p>Email with CC.</p>",
+            cc=[os.getenv("TEST_EMAIL_CC")]
         )
 
-        # Assertions
         self.assertTrue(result)
-        mock_sendgrid_client.return_value.send.assert_called_once()
+        mock_brevo_client.return_value.send_transac_email.assert_called_once()
 
-    @patch("hkabtrak.util.SendGridAPIClient")
-    def test_send_email_with_attachment(self, mock_sendgrid_client):
+    @patch("hkabtrak.util.sib_api_v3_sdk.TransactionalEmailsApi")
+    def test_send_email_with_attachment(self, mock_brevo_client):
         """Test email sending with an attachment"""
 
-        # Mock successful response
         mock_response = MagicMock()
-        mock_response.status_code = 202
-        mock_sendgrid_client.return_value.send.return_value = mock_response
+        mock_response.message_id = "attachment-id"
+        mock_brevo_client.return_value.send_transac_email.return_value = mock_response
 
-        # Simulate a file attachment
-        sample_attachment = ("test.txt", b"Hello, world!", "text/plain")
+        sample_attachment = ("test.txt", b"Sample file content", "text/plain")
 
-        # Call the function with an attachment
         result = send_email(
-            to_emails=["recipient@example.com"],
-            subject="Attachment Test",
-            body="<p>Testing attachment.</p>",
+            to_emails=[os.getenv("TEST_EMAIL_TO")],
+            subject="📎 Attachment Test",
+            body="<p>Email with file attached.</p>",
             attachments=[sample_attachment]
         )
 
-        # Assertions
         self.assertTrue(result)
-        mock_sendgrid_client.return_value.send.assert_called_once()
+        mock_brevo_client.return_value.send_transac_email.assert_called_once()
+
+    def test_send_real_email(self):
+        """
+        Send a real email using live Brevo API key.
+        This is not mocked — set TEST_EMAIL_TO in .env to use this.
+        """
+        to_email = os.getenv("TEST_EMAIL_TO")
+        if not to_email:
+            self.skipTest("TEST_EMAIL_TO not set in environment")
+
+        result = send_email(
+            to_emails=to_email,
+            subject="📡 Real Brevo Email Test",
+            body="<p>This is a real test from your app's Brevo integration.</p>"
+        )
+
+        self.assertTrue(result)
+
 
 if __name__ == "__main__":
     unittest.main()

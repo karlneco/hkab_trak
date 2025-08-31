@@ -2,10 +2,12 @@ import os
 import logging
 from functools import wraps
 from flask_login import current_user
-
 from flask import abort
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail, Email, To, Content, Attachment, FileContent, FileName, FileType, Disposition
+
+import sib_api_v3_sdk
+from sib_api_v3_sdk.rest import ApiException
+from sib_api_v3_sdk.models import SendSmtpEmail, SendSmtpEmailTo, SendSmtpEmailCc, SendSmtpEmailAttachment
+
 import base64
 import requests  # SendGrid uses requests under the hood
 
@@ -32,56 +34,56 @@ file_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 logger.addHandler(file_handler)
 
+# Setup Brevo API configuration
+configuration = sib_api_v3_sdk.Configuration()
+configuration.api_key['api-key'] = os.getenv("BREVO_API_KEY")
+
+
 def send_email(to_emails, subject, body, cc=None, attachments=None):
     """
-    Send an email using SendGrid API.
-
-    :param to_emails: List of recipient email addresses.
-    :param subject: Subject of the email.
-    :param body: HTML body of the email.
-    :param cc: List of CC email addresses (optional).
-    :param attachments: List of tuples (filename, file_content, mime_type) for attachments.
-    :return: Response status and message.
+    Send an email using Brevo (Sendinblue) transactional email API.
     """
     try:
-        # Create a Mail object
-        message = Mail(
-            from_email=os.getenv("MAIL_DEFAULT_SENDER"),
-            to_emails=to_emails if isinstance(to_emails, list) else [to_emails],
-            subject=subject,
-            html_content=body
-        )
+        api_client = sib_api_v3_sdk.ApiClient(configuration)
+        print("default headers=", api_client.default_headers)
+        api_instance = sib_api_v3_sdk.TransactionalEmailsApi(api_client)
 
-        # Add CC recipients if provided
-        if cc:
-            message.cc = [To(email) for email in (cc if isinstance(cc, list) else [cc])]
+        # Convert recipients
+        to = [SendSmtpEmailTo(email=email) for email in (to_emails if isinstance(to_emails, list) else [to_emails])]
+        cc_list = [SendSmtpEmailCc(email=email) for email in (cc if isinstance(cc, list) else [cc])] if cc else None
 
-        # Attach files if provided
+        # Convert attachments
+        brevo_attachments = []
         if attachments:
             for filename, file_content, mime_type in attachments:
-                encoded_content = base64.b64encode(file_content).decode()  # Encode attachment
-                attachment = Attachment(
-                    FileContent(encoded_content),
-                    FileName(filename),
-                    FileType(mime_type),
-                    Disposition("attachment")
+                encoded_content = base64.b64encode(file_content).decode()
+                brevo_attachments.append(
+                    SendSmtpEmailAttachment(
+                        name=filename,
+                        content=encoded_content
+                    )
                 )
-                message.attachment = attachment
 
-        # Send the email via SendGrid
-        sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
-        response = sg.send(message)
-        logger.info(f"Email sent to {to_emails}: {response.status_code}")
-        return response.status_code in [200, 202]
+        email = SendSmtpEmail(
+            to=to,
+            cc=cc_list,
+            subject=subject,
+            html_content=body,
+            sender={"email": os.getenv("MAIL_DEFAULT_SENDER")},
+            attachment=brevo_attachments if brevo_attachments else None
+        )
 
-    except requests.exceptions.Timeout:
-        logger.error("SendGrid request timed out. Email not sent.")
-        return False
-    except requests.exceptions.RequestException as e:
-        logger.error(f"SendGrid request failed: {e}")
+        # Send the email
+        result = api_instance.send_transac_email(email)
+        logger.info(f"Email sent to {to_emails}: Message ID {result.message_id}")
+        return True
+
+    except ApiException as e:
+        logger.error(f"Brevo API exception: {e}")
         return False
     except Exception as e:
         logger.error(f"Unexpected error sending email: {e}")
+        return False
 
 
 def admin_required(f):
