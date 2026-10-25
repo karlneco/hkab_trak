@@ -10,7 +10,7 @@ flask_login
 Flask-Testing
 Flask-Mail
 Flask-WTF
-gunicorn==20.1.0
-requests~=2.32.3
+gunicorn==22.0.0
+requests~=2.33.0
 WTForms~=3.2.1
 sib-api-v3-sdk~=7.6.0
