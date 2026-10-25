@@ -1,2 +1,12 @@
 /instance/
 /.env
+
+# Python cache and server-only TLS files
+__pycache__/
+*.py[cod]
+*.key
+*.crt
+*.pem
+entrypoint.sh.OLD
+
+*.crt.old
